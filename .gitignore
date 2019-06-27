@@ -1,4 +1,8 @@
 char_embedding.json
-test/*
-./data/train/
-./data/val/
+data/test/
+.idea/.DS_Store
+data/train/
+data/val/
+.DS_Store
+data/.DS_Store
+.idea/workspace.xml
