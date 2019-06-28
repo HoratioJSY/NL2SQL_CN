@@ -27,10 +27,10 @@ class SQLNetCondPredictor(nn.Module):
 
         self.cond_col_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
         if use_ca:
-            print ("Using column attention on where predicting")
+            print("Using column attention on where predicting")
             self.cond_col_att = nn.Linear(N_h, N_h)
         else:
-            print ("Not using column attention on where predicting")
+            print("Not using column attention on where predicting")
             self.cond_col_att = nn.Linear(N_h, 1)
         self.cond_col_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
         self.cond_col_out_K = nn.Linear(N_h, N_h)
@@ -88,11 +88,9 @@ class SQLNetCondPredictor(nn.Module):
 
 
     def forward(self, x_emb_var, x_len, col_inp_var, col_name_len,
-            col_len, col_num, gt_where, gt_cond, reinforce):
+            col_len, col_num, gt_where, gt_cond):
         max_x_len = max(x_len)
         B = len(x_len)
-        if reinforce:
-            raise NotImplementedError('Our model doesn\'t have RL')
 
         # Predict the number of conditions
         # First use column embeddings to calculate the initial hidden unit

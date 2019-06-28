@@ -15,7 +15,7 @@ def load_data(sql_paths, table_paths, use_small=False):
         with open(SQL_PATH, encoding='utf-8') as inf:
             for idx, line in enumerate(inf):
                 sql = json.loads(line.strip())
-                if use_small and idx >= 1000:
+                if use_small and idx >= 512:
                     break
                 sql_data.append(sql)
         print ("Loaded %d data from %s" % (len(sql_data), SQL_PATH))

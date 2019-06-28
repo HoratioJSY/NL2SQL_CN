@@ -77,7 +77,7 @@ class SQLNet(nn.Module):
             ret_seq.append(record_cond)
         return ret_seq
 
-    def forward(self, q, col, col_num, gt_where = None, gt_cond=None, reinforce=False, gt_sel=None, gt_sel_num=None):
+    def forward(self, q, col, col_num, gt_where = None, gt_cond=None, gt_sel=None, gt_sel_num=None):
         B = len(q)
 
         sel_num_score = None
@@ -101,7 +101,7 @@ class SQLNet(nn.Module):
             x_emb_var, x_len = self.cond_embed_layer.gen_x_batch(q, col)
             col_inp_var, col_name_len, col_len = self.cond_embed_layer.gen_col_batch(col)
             max_x_len = max(x_len)
-            cond_score = self.cond_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num, gt_where, gt_cond, reinforce=reinforce)
+            cond_score = self.cond_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num, gt_where, gt_cond)
             where_rela_score = None
         else:
             x_emb_var, x_len = self.embed_layer.gen_x_batch(q, col)
@@ -129,7 +129,7 @@ class SQLNet(nn.Module):
 
             where_rela_score = self.where_rela_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num)
 
-            cond_score = self.cond_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num, gt_where, gt_cond, reinforce=reinforce)
+            cond_score = self.cond_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num, gt_where, gt_cond)
 
         return (sel_num_score, sel_score, agg_score, cond_score, where_rela_score)
 
