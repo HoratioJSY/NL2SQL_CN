@@ -14,6 +14,7 @@ class SQLNetCondPredictor(nn.Module):
         self.max_col_num = max_col_num
         self.gpu = gpu
         self.use_ca = use_ca
+        self.N_depth = N_depth
 
         self.cond_num_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
         self.cond_num_att = nn.Linear(N_h, 1)
@@ -21,8 +22,8 @@ class SQLNetCondPredictor(nn.Module):
                 nn.Tanh(), nn.Linear(N_h, 5))
         self.cond_num_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
         self.cond_num_col_att = nn.Linear(N_h, 1)
-        self.cond_num_col2hid1 = nn.Linear(N_h, 2*N_h)
-        self.cond_num_col2hid2 = nn.Linear(N_h, 2*N_h)
+        self.cond_num_col2hid1 = nn.Linear(N_h, N_depth*N_h)
+        self.cond_num_col2hid2 = nn.Linear(N_h, N_depth*N_h)
 
         self.cond_col_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
         if use_ca:
@@ -103,8 +104,8 @@ class SQLNetCondPredictor(nn.Module):
                 num_col_att_val[idx, num:] = -100
         num_col_att = self.softmax(num_col_att_val)
         K_num_col = (e_num_col * num_col_att.unsqueeze(2)).sum(1)
-        cond_num_h1 = self.cond_num_col2hid1(K_num_col).view(B, 4, self.N_h//2).transpose(0, 1).contiguous()
-        cond_num_h2 = self.cond_num_col2hid2(K_num_col).view(B, 4, self.N_h//2).transpose(0, 1).contiguous()
+        cond_num_h1 = self.cond_num_col2hid1(K_num_col).view(B, 2*self.N_depth, self.N_h//2).transpose(0, 1).contiguous()
+        cond_num_h2 = self.cond_num_col2hid2(K_num_col).view(B, 2*self.N_depth, self.N_h//2).transpose(0, 1).contiguous()
 
         h_num_enc, _ = run_lstm(self.cond_num_lstm, x_emb_var, x_len,
                 hidden=(cond_num_h1, cond_num_h2))

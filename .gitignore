@@ -6,3 +6,7 @@ data/val/
 .DS_Store
 data/.DS_Store
 .idea/workspace.xml
+sqlnet/__pycache__/
+sqlnet/lib/__pycache__/
+sqlnet/model/__pycache__/
+sqlnet/model/modules/__pycache__/

@@ -12,15 +12,16 @@ class SelNumPredictor(nn.Module):
         super(SelNumPredictor, self).__init__()
         self.N_h = N_h
         self.use_ca = use_ca
+        self.N_depth = N_depth
 
-        self.sel_num_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
+        self.sel_num_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=self.N_depth, batch_first=True, dropout=0.3, bidirectional=True)
 
         self.sel_num_att = nn.Linear(N_h, 1)
         self.sel_num_col_att = nn.Linear(N_h, 1)
         self.sel_num_out = nn.Sequential(nn.Linear(N_h, N_h), nn.Tanh(), nn.Linear(N_h,4))
         self.softmax = nn.Softmax(dim=-1)
-        self.sel_num_col2hid1 = nn.Linear(N_h, 2 * N_h)
-        self.sel_num_col2hid2 = nn.Linear(N_h, 2 * N_h)
+        self.sel_num_col2hid1 = nn.Linear(N_h, N_depth * N_h)
+        self.sel_num_col2hid2 = nn.Linear(N_h, N_depth * N_h)
 
 
         if self.use_ca:
@@ -41,10 +42,10 @@ class SelNumPredictor(nn.Module):
                 num_col_att_val[idx, num:] = -1000000
         num_col_att = self.softmax(num_col_att_val)
         K_num_col = (e_num_col * num_col_att.unsqueeze(2)).sum(1)
-        sel_num_h1 = self.sel_num_col2hid1(K_num_col).view((B, 4, self.N_h//2)).transpose(0,1).contiguous()
-        sel_num_h2 = self.sel_num_col2hid2(K_num_col).view((B, 4, self.N_h//2)).transpose(0,1).contiguous()
+        sel_num_h1 = self.sel_num_col2hid1(K_num_col).view((B, 2*self.N_depth, self.N_h//2)).transpose(0,1).contiguous()
+        sel_num_h2 = self.sel_num_col2hid2(K_num_col).view((B, 2*self.N_depth, self.N_h//2)).transpose(0,1).contiguous()
 
-        h_num_enc, _ = run_lstm(self.sel_num_lstm, x_emb_var, x_len,hidden=(sel_num_h1, sel_num_h2))
+        h_num_enc, _ = run_lstm(self.sel_num_lstm, x_emb_var, x_len, hidden=(sel_num_h1, sel_num_h2))
 
         num_att_val = self.sel_num_att(h_num_enc).squeeze()
         for idx, num in enumerate(x_len):
