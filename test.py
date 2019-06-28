@@ -27,7 +27,7 @@ if __name__ == '__main__':
     word_emb = load_word_emb('data/char_embedding.json')
     model = SQLNet(word_emb, N_word=n_word, use_ca=args.ca, gpu=gpu, trainable_emb=args.train_emb)
 
-    model_path = 'saved_model/best_model'
+    model_path = '../drive/My Drive/saved_model/best_model'
     print ("Loading from %s" % model_path)
     model.load_state_dict(torch.load(model_path))
     print ("Loaded model from %s" % model_path)
