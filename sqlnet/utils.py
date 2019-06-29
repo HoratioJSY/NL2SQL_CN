@@ -3,6 +3,7 @@ from sqlnet.lib.dbengine import DBEngine
 import numpy as np
 from tqdm import tqdm
 
+
 def load_data(sql_paths, table_paths, use_small=False):
     if not isinstance(sql_paths, list):
         sql_paths = (sql_paths, )
@@ -15,17 +16,17 @@ def load_data(sql_paths, table_paths, use_small=False):
         with open(SQL_PATH, encoding='utf-8') as inf:
             for idx, line in enumerate(inf):
                 sql = json.loads(line.strip())
-                if use_small and idx >= 512:
+                if use_small and idx >= 500:
                     break
                 sql_data.append(sql)
-        print ("Loaded %d data from %s" % (len(sql_data), SQL_PATH))
+        print("Loaded %d data from %s" % (len(sql_data), SQL_PATH))
 
     for TABLE_PATH in table_paths:
         with open(TABLE_PATH, encoding='utf-8') as inf:
             for line in inf:
                 tab = json.loads(line.strip())
                 table_data[tab[u'id']] = tab
-        print ("Loaded %d data from %s" % (len(table_data), TABLE_PATH))
+        print("Loaded %d data from %s" % (len(table_data), TABLE_PATH))
 
     ret_sql_data = []
     for sql in sql_data:
@@ -33,6 +34,7 @@ def load_data(sql_paths, table_paths, use_small=False):
             ret_sql_data.append(sql)
 
     return ret_sql_data, table_data
+
 
 def load_dataset(toy=False, use_small=False, mode='train'):
     print ("Loading dataset")
@@ -46,6 +48,7 @@ def load_dataset(toy=False, use_small=False, mode='train'):
         test_sql, test_table = load_data('data/test/test.json', 'data/test/test.tables.json', use_small=use_small)
         test_db = 'data/test/test.db'
         return dev_sql, dev_table, dev_db, test_sql, test_table, test_db
+
 
 def to_batch_seq(sql_data, table_data, idxes, st, ed, ret_vis_data=False):
     q_seq = []
@@ -80,6 +83,7 @@ def to_batch_seq(sql_data, table_data, idxes, st, ed, ret_vis_data=False):
     else:
         return q_seq, sel_num_seq, col_seq, col_num, ans_seq, gt_cond_seq
 
+
 def to_batch_seq_test(sql_data, table_data, idxes, st, ed):
     q_seq = []
     col_seq = []
@@ -95,6 +99,7 @@ def to_batch_seq_test(sql_data, table_data, idxes, st, ed):
         table_ids.append(sql_data[idxes[i]]['table_id'])
     return q_seq, col_seq, col_num, raw_seq, table_ids
 
+
 def to_batch_query(sql_data, idxes, st, ed):
     query_gt = []
     table_ids = []
@@ -103,6 +108,7 @@ def to_batch_query(sql_data, idxes, st, ed):
         query_gt.append(sql_data[idxes[i]]['sql'])
         table_ids.append(sql_data[idxes[i]]['table_id'])
     return query_gt, table_ids
+
 
 def epoch_train(model, optimizer, batch_size, sql_data, table_data):
     model.train()
@@ -132,6 +138,7 @@ def epoch_train(model, optimizer, batch_size, sql_data, table_data):
         optimizer.step()
     return cum_loss / len(sql_data)
 
+
 def predict_test(model, batch_size, sql_data, table_data, output_path):
     model.eval()
     perm = list(range(len(sql_data)))
@@ -147,6 +154,7 @@ def predict_test(model, batch_size, sql_data, table_data, output_path):
             fw.writelines(json.dumps(sql_pred, ensure_ascii=False)+'\n')
             # fw.writelines(json.dumps(sql_pred,ensure_ascii=False).encode('utf-8')+'\n')
     fw.close()
+
 
 def epoch_acc(model, batch_size, sql_data, table_data, db_path):
     engine = DBEngine(db_path)

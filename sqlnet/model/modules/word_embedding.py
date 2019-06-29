@@ -34,8 +34,8 @@ class WordEmbedding(nn.Module):
         val_len = np.zeros(B, dtype=np.int64)
         for i, (one_q, one_col) in enumerate(zip(q, col)):
             if self.trainable:
-                q_val = [self.w2i.get(x,0) for x in one_q]
-                val_embs.append([1] + q_val + [2])  #<BEG> and <END>
+                q_val = [self.w2i.get(x, np.zeros(self.N_word, dtype=np.float32)) for x in one_q]
+                val_embs.append([np.zeros(self.N_word, dtype=np.float32)] + q_val + [np.zeros(self.N_word, dtype=np.float32)])  #<BEG> and <END>
             else:
                 # print (i)
                 # print ([x.encode('utf-8') for x in one_q])
@@ -48,15 +48,25 @@ class WordEmbedding(nn.Module):
         max_len = max(val_len)
 
         if self.trainable:
-            val_tok_array = np.zeros((B, max_len), dtype=np.int64)
+            # val_tok_array = np.zeros((B, max_len), dtype=np.int64)
+            # for i in range(B):
+            #     for t in range(len(val_embs[i])):
+            #         val_tok_array[i, t] = val_embs[i][t]
+            # val_tok = torch.from_numpy(val_tok_array)
+            # if self.gpu:
+            #     val_tok = val_tok.cuda()
+            # val_tok_var = Variable(val_tok)
+            # val_inp_var = self.embedding(val_tok_var)
+
+            val_emb_array = np.zeros((B, max_len, self.N_word), dtype=np.float32)
             for i in range(B):
                 for t in range(len(val_embs[i])):
-                    val_tok_array[i, t] = val_embs[i][t]
-            val_tok = torch.from_numpy(val_tok_array)
+                    val_emb_array[i, t, :] = val_embs[i][t]
+            val_inp = torch.from_numpy(val_emb_array)
             if self.gpu:
-                val_tok = val_tok.cuda()
-            val_tok_var = Variable(val_tok)
-            val_inp_var = self.embedding(val_tok_var)
+                val_inp = val_inp.cuda()
+            val_inp_var = Variable(val_inp)
+
         else:
             val_emb_array = np.zeros((B, max_len, self.N_word), dtype=np.float32)
             for i in range(B):
