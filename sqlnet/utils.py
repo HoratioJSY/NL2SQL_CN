@@ -197,6 +197,7 @@ def load_word_emb(file_name):
     f = open(file_name)
     ret = json.load(f)
     f.close()
+    print('Vocabulary size: ', len(ret))
     # ret = {}
     # with open(file_name, encoding='latin') as inf:
     #     ret = json.load(inf)

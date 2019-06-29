@@ -16,7 +16,11 @@ class WordEmbedding(nn.Module):
 
         if trainable:
             print("Using trainable embedding")
-            self.w2i, word_emb_val = word_emb
+            # self.w2i, word_emb_val = word_emb
+            self.w2i = dict(zip(word_emb.keys(), range(len(word_emb.keys()))))
+            word_emb_val = np.array(list(word_emb.values()))
+            assert len(self.w2i) == len(word_emb_val)
+
             self.embedding = nn.Embedding(len(self.w2i), N_word)
             self.embedding.weight = nn.Parameter(
                     torch.from_numpy(word_emb_val.astype(np.float32)))
@@ -47,7 +51,7 @@ class WordEmbedding(nn.Module):
             val_tok_array = np.zeros((B, max_len), dtype=np.int64)
             for i in range(B):
                 for t in range(len(val_embs[i])):
-                    val_tok_array[i,t] = val_embs[i][t]
+                    val_tok_array[i, t] = val_embs[i][t]
             val_tok = torch.from_numpy(val_tok_array)
             if self.gpu:
                 val_tok = val_tok.cuda()
@@ -57,7 +61,7 @@ class WordEmbedding(nn.Module):
             val_emb_array = np.zeros((B, max_len, self.N_word), dtype=np.float32)
             for i in range(B):
                 for t in range(len(val_embs[i])):
-                    val_emb_array[i,t,:] = val_embs[i][t]
+                    val_emb_array[i, t, :] = val_embs[i][t]
             val_inp = torch.from_numpy(val_emb_array)
             if self.gpu:
                 val_inp = val_inp.cuda()
@@ -94,7 +98,7 @@ class WordEmbedding(nn.Module):
             val_tok_array = np.zeros((B, max_len), dtype=np.int64)
             for i in range(B):
                 for t in range(len(val_embs[i])):
-                    val_tok_array[i,t] = val_embs[i][t]
+                    val_tok_array[i, t] = val_embs[i][t]
             val_tok = torch.from_numpy(val_tok_array)
             if self.gpu:
                 val_tok = val_tok.cuda()
@@ -105,7 +109,7 @@ class WordEmbedding(nn.Module):
                     (B, max_len, self.N_word), dtype=np.float32)
             for i in range(B):
                 for t in range(len(val_embs[i])):
-                    val_emb_array[i,t,:] = val_embs[i][t]
+                    val_emb_array[i, t, :] = val_embs[i][t]
             val_inp = torch.from_numpy(val_emb_array)
             if self.gpu:
                 val_inp = val_inp.cuda()

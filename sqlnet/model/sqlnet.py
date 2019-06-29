@@ -86,20 +86,22 @@ class SQLNet(nn.Module):
         cond_score = None
         #Predict aggregator
         if self.trainable_emb:
-            x_emb_var, x_len = self.agg_embed_layer.gen_x_batch(q, col)
-            col_inp_var, col_name_len, col_len = self.agg_embed_layer.gen_col_batch(col)
+            x_emb_var, x_len = self.embed_layer.gen_x_batch(q, col)
+            col_inp_var, col_name_len, col_len = self.embed_layer.gen_col_batch(col)
+            # x_emb_var, x_len = self.agg_embed_layer.gen_x_batch(q, col)
+            # col_inp_var, col_name_len, col_len = self.agg_embed_layer.gen_col_batch(col)
             max_x_len = max(x_len)
             agg_score = self.agg_pred(x_emb_var, x_len, col_inp_var,
                     col_name_len, col_len, col_num, gt_sel=gt_sel)
 
-            x_emb_var, x_len = self.sel_embed_layer.gen_x_batch(q, col)
-            col_inp_var, col_name_len, col_len = self.sel_embed_layer.gen_col_batch(col)
+            # x_emb_var, x_len = self.sel_embed_layer.gen_x_batch(q, col)
+            # col_inp_var, col_name_len, col_len = self.sel_embed_layer.gen_col_batch(col)
             max_x_len = max(x_len)
             sel_score = self.sel_pred(x_emb_var, x_len, col_inp_var,
                     col_name_len, col_len, col_num)
 
-            x_emb_var, x_len = self.cond_embed_layer.gen_x_batch(q, col)
-            col_inp_var, col_name_len, col_len = self.cond_embed_layer.gen_col_batch(col)
+            # x_emb_var, x_len = self.cond_embed_layer.gen_x_batch(q, col)
+            # col_inp_var, col_name_len, col_len = self.cond_embed_layer.gen_col_batch(col)
             max_x_len = max(x_len)
             cond_score = self.cond_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num, gt_where, gt_cond)
             where_rela_score = None
@@ -254,8 +256,8 @@ class SQLNet(nn.Module):
             try:
                 where_rela_truth = Variable(data.cuda())
             except:
-                print ("where_rela_truth error")
-                print (data)
+                print("where_rela_truth error")
+                print(data)
                 exit(0)
         else:
             where_rela_truth = Variable(data)
