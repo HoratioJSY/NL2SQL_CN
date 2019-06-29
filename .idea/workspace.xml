@@ -2,27 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0cf59aca-90a2-421d-a7f8-70aa3ae346d9" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dictionaries/horatio_jsy.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/__init__.py" afterPath="$PROJECT_DIR$/sqlnet/__init__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/lib/__init__.py" afterPath="$PROJECT_DIR$/sqlnet/lib/__init__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/lib/dbengine.py" afterPath="$PROJECT_DIR$/sqlnet/lib/dbengine.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/model/__init__.py" afterPath="$PROJECT_DIR$/sqlnet/model/__init__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/model/modules/__init__.py" afterPath="$PROJECT_DIR$/sqlnet/model/modules/__init__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/model/modules/aggregator_predict.py" afterPath="$PROJECT_DIR$/sqlnet/model/modules/aggregator_predict.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/model/modules/net_utils.py" afterPath="$PROJECT_DIR$/sqlnet/model/modules/net_utils.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/model/modules/select_number.py" afterPath="$PROJECT_DIR$/sqlnet/model/modules/select_number.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/model/modules/selection_predict.py" afterPath="$PROJECT_DIR$/sqlnet/model/modules/selection_predict.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/model/modules/seq2sql_condition_predict.py" afterPath="$PROJECT_DIR$/sqlnet/model/modules/seq2sql_condition_predict.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/model/modules/sqlnet_condition_predict.py" afterPath="$PROJECT_DIR$/sqlnet/model/modules/sqlnet_condition_predict.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/model/modules/where_relation.py" afterPath="$PROJECT_DIR$/sqlnet/model/modules/where_relation.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/model/modules/word_embedding.py" afterPath="$PROJECT_DIR$/sqlnet/model/modules/word_embedding.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/model/sqlnet.py" afterPath="$PROJECT_DIR$/sqlnet/model/sqlnet.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sqlnet/utils.py" afterPath="$PROJECT_DIR$/sqlnet/utils.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/start_test.sh" afterPath="$PROJECT_DIR$/start_test.sh" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/start_train.sh" afterPath="$PROJECT_DIR$/start_train.sh" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test.py" afterPath="$PROJECT_DIR$/test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/train.py" afterPath="$PROJECT_DIR$/train.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -33,11 +13,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="LanguageModel_CN.py" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/PycharmProjects/NLP_Sample/LanguageModel_CN.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="580">
+              <caret line="40" column="65" lean-forward="true" selection-start-line="40" selection-start-column="30" selection-end-line="40" selection-end-column="65" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="train.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-243">
-              <caret line="37" column="21" lean-forward="true" selection-start-line="37" selection-start-column="21" selection-end-line="37" selection-end-column="21" />
+            <state relative-caret-position="444">
+              <caret line="51" column="38" lean-forward="false" selection-start-line="51" selection-start-column="33" selection-end-line="51" selection-end-column="38" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -48,8 +38,8 @@
       <file leaf-file-name="sqlnet.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sqlnet/model/sqlnet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
-              <caret line="12" column="0" lean-forward="true" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+            <state relative-caret-position="227">
+              <caret line="137" column="12" lean-forward="false" selection-start-line="137" selection-start-column="8" selection-end-line="137" selection-end-column="12" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -60,8 +50,30 @@
       <file leaf-file-name="word_embedding.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/word_embedding.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-702">
-              <caret line="24" column="42" lean-forward="false" selection-start-line="24" selection-start-column="42" selection-end-line="24" selection-end-column="42" />
+            <state relative-caret-position="901">
+              <caret line="53" column="37" lean-forward="false" selection-start-line="53" selection-start-column="37" selection-end-line="53" selection-end-column="37" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test_OTG.py" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/PycharmProjects/test_pycharm/test_OTG.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="289">
+              <caret line="17" column="10" lean-forward="false" selection-start-line="17" selection-start-column="10" selection-end-line="17" selection-end-column="10" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="utils.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sqlnet/utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1052">
+              <caret line="191" column="3" lean-forward="false" selection-start-line="191" selection-start-column="3" selection-end-line="191" selection-end-column="3" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -72,16 +84,20 @@
       <file leaf-file-name="test.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="11" column="68" lean-forward="false" selection-start-line="11" selection-start-column="68" selection-end-line="11" selection-end-column="68" />
-              <folding>
-                <element signature="e#0#12#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="493">
+              <caret line="32" column="0" lean-forward="false" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>agg_embed_layer</find>
+      <find>mbed</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -89,16 +105,18 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/sqlnet/utils.py" />
         <option value="$PROJECT_DIR$/sqlnet/model/modules/aggregator_predict.py" />
-        <option value="$PROJECT_DIR$/sqlnet/model/modules/select_number.py" />
         <option value="$PROJECT_DIR$/sqlnet/model/modules/selection_predict.py" />
-        <option value="$PROJECT_DIR$/sqlnet/model/modules/sqlnet_condition_predict.py" />
+        <option value="$PROJECT_DIR$/sqlnet/model/modules/select_number.py" />
         <option value="$PROJECT_DIR$/sqlnet/model/modules/where_relation.py" />
-        <option value="$PROJECT_DIR$/sqlnet/model/modules/word_embedding.py" />
-        <option value="$PROJECT_DIR$/train.py" />
+        <option value="$PROJECT_DIR$/sqlnet/model/modules/seq2sql_condition_predict.py" />
+        <option value="$PROJECT_DIR$/sqlnet/model/modules/sqlnet_condition_predict.py" />
         <option value="$PROJECT_DIR$/test.py" />
+        <option value="$PROJECT_DIR$/train.py" />
+        <option value="$USER_HOME$/PycharmProjects/test_pycharm/test_OTG.py" />
         <option value="$PROJECT_DIR$/sqlnet/model/sqlnet.py" />
+        <option value="$PROJECT_DIR$/sqlnet/utils.py" />
+        <option value="$PROJECT_DIR$/sqlnet/model/modules/word_embedding.py" />
       </list>
     </option>
   </component>
@@ -180,7 +198,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.test_OTG">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -198,6 +216,28 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
+    <configuration name="test_OTG" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/envs/NL2SQL/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$USER_HOME$/PycharmProjects/test_pycharm" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="NL2SQL_CN" />
+      <option name="SCRIPT_NAME" value="$USER_HOME$/PycharmProjects/test_pycharm/test_OTG.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+    </configuration>
+    <recent_temporary>
+      <list size="1">
+        <item index="0" class="java.lang.String" itemvalue="Python.test_OTG" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="ShelveChangesManager" show_recycled="false">
     <option name="remove_strategy" value="false" />
@@ -214,16 +254,15 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1680" height="1050" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25274727" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32958034" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.10747185" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2026612" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -240,7 +279,25 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager />
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/sqlnet/model/modules/select_number.py</url>
+          <line>47</line>
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/sqlnet/model/sqlnet.py</url>
+          <line>151</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/sqlnet/model/sqlnet.py</url>
+          <line>263</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="5" />
+    </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
@@ -297,16 +354,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sqlnet/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3417">
-          <caret line="201" column="37" lean-forward="false" selection-start-line="201" selection-start-column="37" selection-end-line="201" selection-end-column="37" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -314,30 +361,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/net_utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#12#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/aggregator_predict.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
           <caret line="10" column="20" lean-forward="false" selection-start-line="10" selection-start-column="20" selection-end-line="10" selection-end-column="20" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/select_number.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="148">
-          <caret line="27" column="71" lean-forward="false" selection-start-line="27" selection-start-column="71" selection-end-line="27" selection-end-column="71" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
@@ -354,10 +381,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/sqlnet_condition_predict.py">
+    <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/where_relation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3456">
-          <caret line="37" column="67" lean-forward="false" selection-start-line="37" selection-start-column="67" selection-end-line="37" selection-end-column="67" />
+        <state relative-caret-position="329">
+          <caret line="42" column="60" lean-forward="false" selection-start-line="42" selection-start-column="60" selection-end-line="42" selection-end-column="60" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/select_number.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="30" lean-forward="true" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="30" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
@@ -366,18 +403,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/seq2sql_condition_predict.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1246">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state relative-caret-position="187">
+          <caret line="11" column="41" lean-forward="false" selection-start-line="11" selection-start-column="41" selection-end-line="11" selection-end-column="41" />
           <folding>
-            <element signature="e#0#11#0" expanded="true" />
+            <element signature="e#0#11#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/where_relation.py">
+    <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/sqlnet_condition_predict.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="182">
-          <caret line="25" column="72" lean-forward="false" selection-start-line="25" selection-start-column="72" selection-end-line="25" selection-end-column="72" />
+        <state relative-caret-position="262">
+          <caret line="97" column="68" lean-forward="false" selection-start-line="97" selection-start-column="67" selection-end-line="97" selection-end-column="68" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
@@ -386,54 +423,86 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/start_train.sh">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state relative-caret-position="17">
+          <caret line="1" column="20" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="20" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/start_test.sh">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state relative-caret-position="34">
+          <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/train.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-243">
-          <caret line="37" column="21" lean-forward="true" selection-start-line="37" selection-start-column="21" selection-end-line="37" selection-end-column="21" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="11" column="68" lean-forward="false" selection-start-line="11" selection-start-column="68" selection-end-line="11" selection-end-column="68" />
+        <state relative-caret-position="493">
+          <caret line="32" column="0" lean-forward="false" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/net_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-84">
+          <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="33" selection-end-line="5" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/PycharmProjects/test_pycharm/test_OTG.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="17" column="10" lean-forward="false" selection-start-line="17" selection-start-column="10" selection-end-line="17" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/PycharmProjects/NLP_Sample/LanguageModel_CN.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="580">
+          <caret line="40" column="65" lean-forward="true" selection-start-line="40" selection-start-column="30" selection-end-line="40" selection-end-column="65" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sqlnet/model/sqlnet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="227">
+          <caret line="137" column="12" lean-forward="false" selection-start-line="137" selection-start-column="8" selection-end-line="137" selection-end-column="12" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sqlnet/model/sqlnet.py">
+    <entry file="file://$PROJECT_DIR$/train.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="12" column="0" lean-forward="true" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+        <state relative-caret-position="444">
+          <caret line="51" column="38" lean-forward="false" selection-start-line="51" selection-start-column="33" selection-end-line="51" selection-end-column="38" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sqlnet/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1052">
+          <caret line="191" column="3" lean-forward="false" selection-start-line="191" selection-start-column="3" selection-end-line="191" selection-end-column="3" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sqlnet/model/modules/word_embedding.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-702">
-          <caret line="24" column="42" lean-forward="false" selection-start-line="24" selection-start-column="42" selection-end-line="24" selection-end-column="42" />
+        <state relative-caret-position="901">
+          <caret line="53" column="37" lean-forward="false" selection-start-line="53" selection-start-column="37" selection-end-line="53" selection-end-column="37" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
