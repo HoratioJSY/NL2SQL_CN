@@ -14,6 +14,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_emb', action='store_true', help='Train word embedding for SQLNet')
     parser.add_argument('--restore', action='store_true', help='Whether restore trained model')
     parser.add_argument('--logdir', type=str, default='', help='Path of save experiment log')
+    parser.add_argument('--learning_rate', type=float, default=1e-3, help='the overall learning rate of model')
     args = parser.parse_args()
 
     n_word=300
@@ -25,7 +26,7 @@ if __name__ == '__main__':
         use_small=False
         gpu=args.gpu
         batch_size=args.bs
-    learning_rate = 1e-3
+    learning_rate = args.learning_rate
 
     # load dataset
     train_sql, train_table, train_db, dev_sql, dev_table, dev_db = load_dataset(use_small=use_small)
