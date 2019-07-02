@@ -12,7 +12,7 @@ from sqlnet.model.modules.where_relation import WhereRelationPredictor
 
 
 class SQLNet(nn.Module):
-    def __init__(self, word_emb, N_word, N_h=256, N_depth=3,
+    def __init__(self, word_emb, N_word, N_h=512, N_depth=3,
             gpu=False, use_ca=True, trainable_emb=False):
         super(SQLNet, self).__init__()
         self.use_ca = use_ca
