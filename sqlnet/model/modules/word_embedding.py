@@ -1,8 +1,5 @@
-import json
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
 import numpy as np
 
 class WordEmbedding(nn.Module):
@@ -56,18 +53,18 @@ class WordEmbedding(nn.Module):
             val_tok = torch.from_numpy(val_tok_array)
             if self.gpu:
                 val_tok = val_tok.cuda()
-            val_tok_var = Variable(val_tok)
-            val_inp_var = self.embedding(val_tok_var)
+            # val_tok_var = Variable(val_tok)
+            val_inp_var = self.embedding(val_tok)
 
         else:
             val_emb_array = np.zeros((B, max_len, self.N_word), dtype=np.float32)
             for i in range(B):
                 for t in range(len(val_embs[i])):
                     val_emb_array[i, t, :] = val_embs[i][t]
-            val_inp = torch.from_numpy(val_emb_array)
+            val_inp_var = torch.from_numpy(val_emb_array)
             if self.gpu:
-                val_inp = val_inp.cuda()
-            val_inp_var = Variable(val_inp)
+                val_inp_var = val_inp_var.cuda()
+            # val_inp_var = Variable(val_inp)
         return val_inp_var, val_len
 
     def gen_col_batch(self, cols):
@@ -104,17 +101,17 @@ class WordEmbedding(nn.Module):
             val_tok = torch.from_numpy(val_tok_array)
             if self.gpu:
                 val_tok = val_tok.cuda()
-            val_tok_var = Variable(val_tok)
-            val_inp_var = self.embedding(val_tok_var)
+            # val_tok_var = Variable(val_tok)
+            val_inp_var = self.embedding(val_tok)
         else:
             val_emb_array = np.zeros(
                     (B, max_len, self.N_word), dtype=np.float32)
             for i in range(B):
                 for t in range(len(val_embs[i])):
                     val_emb_array[i, t, :] = val_embs[i][t]
-            val_inp = torch.from_numpy(val_emb_array)
+            val_inp_var = torch.from_numpy(val_emb_array)
             if self.gpu:
-                val_inp = val_inp.cuda()
-            val_inp_var = Variable(val_inp)
+                val_inp_var = val_inp_var.cuda()
+            # val_inp_var = Variable(val_inp)
 
         return val_inp_var, val_len

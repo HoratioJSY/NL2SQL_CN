@@ -17,7 +17,7 @@ class SQLNet(nn.Module):
         super(SQLNet, self).__init__()
         self.use_ca = use_ca
         self.trainable_emb = trainable_emb
-
+        self.sample_data = True
         self.gpu = gpu
         self.N_h = N_h
         self.N_depth = N_depth
@@ -77,86 +77,52 @@ class SQLNet(nn.Module):
             ret_seq.append(record_cond)
         return ret_seq
 
-    def forward(self, q, col, col_num, gt_where = None, gt_cond=None, gt_sel=None, gt_sel_num=None):
+    def forward(self, q, col, col_num, gt_where=None, gt_cond=None, gt_sel=None, gt_sel_num=None):
+        """
+        x_emb_var: embedding of each question
+        x_len: length of each question
+        col_inp_var: embedding of each header
+        col_name_len: length of each header
+        col_len: number of headers in each table, array type
+        col_num: number of headers in each table, list type
+        """
         B = len(q)
 
-        sel_num_score = None
-        agg_score = None
-        sel_score = None
-        cond_score = None
-        #Predict aggregator
-        if self.trainable_emb:
-            x_emb_var, x_len = self.embed_layer.gen_x_batch(q, col)
-            col_inp_var, col_name_len, col_len = self.embed_layer.gen_col_batch(col)
+        if self.sample_data:
+            print(q)
+            print(B)
+            print('\n\n\n')
+            print(col)
+            print('\n\n\n')
+            print(len(col))
+            print(col_num)
+            self.sample_data = False
 
-            # # x_emb_var, x_len = self.agg_embed_layer.gen_x_batch(q, col)
-            # # col_inp_var, col_name_len, col_len = self.agg_embed_layer.gen_col_batch(col)
-            # max_x_len = max(x_len)
-            # agg_score = self.agg_pred(x_emb_var, x_len, col_inp_var,
-            #         col_name_len, col_len, col_num, gt_sel=gt_sel)
-            #
-            # # x_emb_var, x_len = self.sel_embed_layer.gen_x_batch(q, col)
-            # # col_inp_var, col_name_len, col_len = self.sel_embed_layer.gen_col_batch(col)
-            # max_x_len = max(x_len)
-            # sel_score = self.sel_pred(x_emb_var, x_len, col_inp_var,
-            #         col_name_len, col_len, col_num)
-            #
-            # # x_emb_var, x_len = self.cond_embed_layer.gen_x_batch(q, col)
-            # # col_inp_var, col_name_len, col_len = self.cond_embed_layer.gen_col_batch(col)
-            # max_x_len = max(x_len)
-            # cond_score = self.cond_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num, gt_where, gt_cond)
-            # where_rela_score = None
+        x_emb_var, x_len = self.embed_layer.gen_x_batch(q, col)
+        col_inp_var, col_name_len, col_len = self.embed_layer.gen_col_batch(col)
 
-            sel_num_score = self.sel_num(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num)
-            if gt_sel_num:
-                pr_sel_num = gt_sel_num
-            else:
-                pr_sel_num = np.argmax(sel_num_score.data.cpu().numpy(), axis=1)
-            sel_score = self.sel_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num)
-
-            if gt_sel:
-                pr_sel = gt_sel
-            else:
-                num = np.argmax(sel_num_score.data.cpu().numpy(), axis=1)
-                sel = sel_score.data.cpu().numpy()
-                pr_sel = [list(np.argsort(-sel[b])[:num[b]]) for b in range(len(num))]
-
-            agg_score = self.agg_pred(x_emb_var, x_len, col_inp_var,
-                                      col_name_len, col_len, col_num, gt_sel=pr_sel, gt_sel_num=pr_sel_num)
-
-            where_rela_score = self.where_rela_pred(x_emb_var, x_len,
-                                                    col_inp_var, col_name_len, col_len, col_num)
-
-            cond_score = self.cond_pred(x_emb_var, x_len, col_inp_var,
-                                        col_name_len, col_len, col_num, gt_where, gt_cond)
-
+        sel_num_score = self.sel_num.forward(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num)
+        if gt_sel_num:
+            pr_sel_num = gt_sel_num
         else:
-            x_emb_var, x_len = self.embed_layer.gen_x_batch(q, col)
-            col_inp_var, col_name_len, col_len = self.embed_layer.gen_col_batch(col)
-            sel_num_score = self.sel_num(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num)
-            # x_emb_var: embedding of each question
-            # x_len: length of each question
-            # col_inp_var: embedding of each header
-            # col_name_len: length of each header
-            # col_len: number of headers in each table, array type
-            # col_num: number of headers in each table, list type
-            if gt_sel_num:
-                pr_sel_num = gt_sel_num
-            else:
-                pr_sel_num = np.argmax(sel_num_score.data.cpu().numpy(), axis=1)
-            sel_score = self.sel_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num)
+            pr_sel_num = np.argmax(sel_num_score.data.cpu().numpy(), axis=1)
+        sel_score = self.sel_pred.forward(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num)
 
-            if gt_sel:
-                pr_sel = gt_sel
-            else:
-                num = np.argmax(sel_num_score.data.cpu().numpy(), axis=1)
-                sel = sel_score.data.cpu().numpy()
-                pr_sel = [list(np.argsort(-sel[b])[:num[b]]) for b in range(len(num))]
-            agg_score = self.agg_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num, gt_sel=pr_sel, gt_sel_num=pr_sel_num)
+        if gt_sel:
+            pr_sel = gt_sel
+        else:
+            num = np.argmax(sel_num_score.data.cpu().numpy(), axis=1)
+            sel = sel_score.data.cpu().numpy()
+            pr_sel = [list(np.argsort(-sel[b])[:num[b]]) for b in range(len(num))]
 
-            where_rela_score = self.where_rela_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num)
+        agg_score = self.agg_pred.forward(x_emb_var, x_len, col_inp_var,
+                                          col_name_len, col_len, col_num, gt_sel=pr_sel, gt_sel_num=pr_sel_num)
 
-            cond_score = self.cond_pred(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num, gt_where, gt_cond)
+        where_rela_score = self.where_rela_pred.forward(x_emb_var, x_len,
+                                                        col_inp_var, col_name_len, col_len, col_num)
+
+        cond_score = self.cond_pred.forward(x_emb_var, x_len, col_inp_var,
+                                            col_name_len, col_len, col_num, gt_where, gt_cond)
 
         return (sel_num_score, sel_score, agg_score, cond_score, where_rela_score)
 
@@ -214,8 +180,8 @@ class SQLNet(nn.Module):
             try:
                 cond_num_truth_var = Variable(data.cuda())
             except:
-                print ("cond_num_truth_var error")
-                print (data)
+                print("cond_num_truth_var error")
+                print(data)
                 exit(0)
         else:
             cond_num_truth_var = Variable(data)

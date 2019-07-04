@@ -21,7 +21,7 @@ if __name__ == '__main__':
     if args.toy:
         use_small=True
         gpu=args.gpu
-        batch_size=16
+        batch_size=args.bs
     else:
         use_small=False
         gpu=args.gpu
