@@ -66,7 +66,7 @@ def to_batch_seq(sql_data, table_data, idxes, st, ed, ret_vis_data=False):
         # print('question:', sql['question'])
         one_question = ''.join(sql['question'].split())
         q_seq.append([char for char in one_question])
-        col_seq.append([[char for char in header] for header in table_data[sql['table_id']]['header']])
+        col_seq.append([[char for char in ''.join(header.split())] for header in table_data[sql['table_id']]['header']])
         col_num.append(len(table_data[sql['table_id']]['header']))
         ans_seq.append(
             (
@@ -94,8 +94,9 @@ def to_batch_seq_test(sql_data, table_data, idxes, st, ed):
     table_ids = []
     for i in range(st, ed):
         sql = sql_data[idxes[i]]
-        q_seq.append([char for char in sql['question']])
-        col_seq.append([[char for char in header] for header in table_data[sql['table_id']]['header']])
+        one_question = ''.join(sql['question'].split())
+        q_seq.append([char for char in one_question])
+        col_seq.append([[char for char in ''.join(header.split())] for header in table_data[sql['table_id']]['header']])
         col_num.append(len(table_data[sql['table_id']]['header']))
         raw_seq.append(sql['question'])
         table_ids.append(sql_data[idxes[i]]['table_id'])

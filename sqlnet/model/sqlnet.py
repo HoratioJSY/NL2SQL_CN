@@ -32,6 +32,7 @@ class SQLNet(nn.Module):
             self.embed_layer = WordEmbedding(word_emb, N_word, gpu, self.SQL_TOK, our_model=True, trainable=trainable_emb)
         else:
             self.embed_layer = BertEmbedding(N_word, gpu, self.SQL_TOK, our_model=True)
+            print('Using Pre-trained BERT as Embedding')
 
         # Predict the number of selected columns
         self.sel_num = SelNumPredictor(N_word, N_h, N_depth, use_ca=use_ca)
