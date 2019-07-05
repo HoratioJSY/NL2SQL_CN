@@ -9,15 +9,15 @@ from sqlnet.model.modules.selection_predict import SelPredictor
 from sqlnet.model.modules.sqlnet_condition_predict import SQLNetCondPredictor
 from sqlnet.model.modules.select_number import SelNumPredictor
 from sqlnet.model.modules.where_relation import WhereRelationPredictor
-
+from sqlnet.model.modules.bert_embedding import BertEmbedding
 
 class SQLNet(nn.Module):
-    def __init__(self, word_emb, N_word, N_h=512, N_depth=3,
-            gpu=False, use_ca=True, trainable_emb=False):
+    def __init__(self, N_word, N_h=512, N_depth=2,
+            gpu=False, use_ca=True, word_emb=300, trainable_emb=False):
         super(SQLNet, self).__init__()
         self.use_ca = use_ca
         self.trainable_emb = trainable_emb
-        self.sample_data = True
+        self.sample_data = False
         self.gpu = gpu
         self.N_h = N_h
         self.N_depth = N_depth
@@ -28,7 +28,10 @@ class SQLNet(nn.Module):
         self.COND_OPS = ['>', '<', '==', '!=']
 
         # Word embedding
-        self.embed_layer = WordEmbedding(word_emb, N_word, gpu, self.SQL_TOK, our_model=True, trainable=trainable_emb)
+        if N_word == 300:
+            self.embed_layer = WordEmbedding(word_emb, N_word, gpu, self.SQL_TOK, our_model=True, trainable=trainable_emb)
+        else:
+            self.embed_layer = BertEmbedding(N_word, gpu, self.SQL_TOK, our_model=True)
 
         # Predict the number of selected columns
         self.sel_num = SelNumPredictor(N_word, N_h, N_depth, use_ca=use_ca)
@@ -203,7 +206,7 @@ class SQLNet(nn.Module):
         cond_col_prob = sigm(cond_col_score)
         bce_loss = -torch.mean(
             3*(cond_col_truth_var * torch.log(cond_col_prob+1e-10)) +
-            (1-cond_col_truth_var) * torch.log(1-cond_col_prob+1e-10) )
+            (1-cond_col_truth_var) * torch.log(1-cond_col_prob+1e-10))
         loss += bce_loss
 
         # Evaluate the operator of conditions
@@ -219,8 +222,8 @@ class SQLNet(nn.Module):
             try:
                 loss += (self.CE(cond_op_pred, cond_op_truth_var) / len(truth_num))
             except:
-                print (cond_op_pred)
-                print (cond_op_truth_var)
+                print(cond_op_pred)
+                print(cond_op_truth_var)
                 exit(0)
 
         #Evaluate the strings of conditions
@@ -236,8 +239,7 @@ class SQLNet(nn.Module):
                     cond_str_truth_var = Variable(data)
                 str_end = len(cond_str_truth)-1
                 cond_str_pred = cond_str_score[b, idx, :str_end]
-                loss += (self.CE(cond_str_pred, cond_str_truth_var) \
-                        / (len(gt_where) * len(gt_where[b])))
+                loss += (self.CE(cond_str_pred, cond_str_truth_var) / (len(gt_where) * len(gt_where[b])))
 
         # Evaluate condition relationship, and / or
         # where_rela_truth = map(lambda x:x[6], truth_num)
