@@ -11,3 +11,4 @@ sqlnet/__pycache__/
 sqlnet/lib/__pycache__/
 sqlnet/model/__pycache__/
 sqlnet/model/modules/__pycache__/
+pre_trained/
