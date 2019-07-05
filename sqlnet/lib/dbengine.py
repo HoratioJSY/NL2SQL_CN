@@ -54,3 +54,4 @@ class DBEngine:
 
         # result_set = [tuple(set(i.values())) for i in out]
         result_set = [tuple(sorted(i.values(), key=lambda x:str(x))) for i in out]
+        return result_set
