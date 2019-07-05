@@ -63,7 +63,9 @@ def to_batch_seq(sql_data, table_data, idxes, st, ed, ret_vis_data=False):
         sel_num = len(sql['sql']['sel'])
         sel_num_seq.append(sel_num)
         conds_num = len(sql['sql']['conds'])
-        q_seq.append([char for char in sql['question']])
+        # print('question:', sql['question'])
+        one_question = ''.join(sql['question'].split())
+        q_seq.append([char for char in one_question])
         col_seq.append([[char for char in header] for header in table_data[sql['table_id']]['header']])
         col_num.append(len(table_data[sql['table_id']]['header']))
         ans_seq.append(

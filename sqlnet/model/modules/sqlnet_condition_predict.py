@@ -162,6 +162,8 @@ class SQLNetCondPredictor(nn.Module):
         e_cond_col, _ = col_name_encode(col_inp_var, col_name_len,
                 col_len, self.cond_op_name_enc)
         h_op_enc, _ = run_lstm(self.cond_op_lstm, x_emb_var, x_len)
+        # print('x_emb_var', x_emb_var.shape)
+        # print('x_len', x_len)
         col_emb = []
         for b in range(B):
             cur_col_emb = torch.stack([e_cond_col[b, x]
@@ -189,7 +191,7 @@ class SQLNetCondPredictor(nn.Module):
         cond_op_score = self.cond_op_out(self.cond_op_out_K(K_cond_op) +
                 self.cond_op_out_col(col_emb)).squeeze()
 
-        #Predict the string of conditions
+        # Predict the string of conditions，预测行名
         h_str_enc, _ = run_lstm(self.cond_str_lstm, x_emb_var, x_len)
         e_cond_col, _ = col_name_encode(col_inp_var, col_name_len,
                 col_len, self.cond_str_name_enc)
@@ -209,13 +211,16 @@ class SQLNetCondPredictor(nn.Module):
             h_ext = h_str_enc.unsqueeze(1).unsqueeze(1)
             g_ext = g_str_s.unsqueeze(3)
             col_ext = col_emb.unsqueeze(2).unsqueeze(2)
-
+            # print('col_ext:', col_ext.shape)
+            # print('g_ext:', g_ext.shape)
+            # print('h_ext:', h_ext.shape)
             cond_str_score = self.cond_str_out(
                     self.cond_str_out_h(h_ext) + self.cond_str_out_g(g_ext) +
                     self.cond_str_out_col(col_ext)).squeeze()
             for b, num in enumerate(x_len):
                 if num < max_x_len:
                     cond_str_score[b, :, :, num:] = -100
+            # print('cond_str_score1:', cond_str_score.shape)
         else:
             h_ext = h_str_enc.unsqueeze(1).unsqueeze(1)
             col_ext = col_emb.unsqueeze(2).unsqueeze(2)
@@ -261,7 +266,7 @@ class SQLNetCondPredictor(nn.Module):
             for b, num in enumerate(x_len):
                 if num < max_x_len:
                     cond_str_score[b, :, :, num:] = -100  #[B, IDX, T, TOK_NUM]
-
+            # print('cond_str_score2:', cond_str_score.shape)
         cond_score = (cond_num_score,
                 cond_col_score, cond_op_score, cond_str_score)
 
