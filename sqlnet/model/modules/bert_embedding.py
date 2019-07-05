@@ -97,7 +97,15 @@ class BertEmbedding(nn.Module):
         tokens_id = []
 
         for i, one_str in enumerate(str_list):
-            tokenizered_chr.append(['[CLS]'] + one_str + ['[SEP]'])
+
+            contain_token = []
+            for tok in one_str:
+                if self.Token2ID.__contains__(tok):
+                    contain_token.append(tok)
+                else:
+                    contain_token.append('[UNK]')
+
+            tokenizered_chr.append(['[CLS]'] + contain_token + ['[SEP]'])
             tokens_id.append(self.tokenizer.convert_tokens_to_ids(tokenizered_chr[-1]))
             val_len[i] = len(tokenizered_chr[-1])
         max_len = max(val_len)
