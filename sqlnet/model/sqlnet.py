@@ -13,7 +13,7 @@ from sqlnet.model.modules.bert_embedding import BertEmbedding
 
 class SQLNet(nn.Module):
     def __init__(self, N_word, N_h=512, N_depth=2,
-            gpu=False, use_ca=True, word_emb=300, trainable_emb=False):
+            gpu=False, use_ca=True, word_emb=None, trainable_emb=False):
         super(SQLNet, self).__init__()
         self.use_ca = use_ca
         self.trainable_emb = trainable_emb
@@ -22,7 +22,7 @@ class SQLNet(nn.Module):
         self.N_h = N_h
         self.N_depth = N_depth
 
-        self.max_col_num = 45
+        self.max_col_num = 50
         self.max_tok_num = 200
         self.SQL_TOK = ['<UNK>', '<END>', 'WHERE', 'AND', 'OR', '==', '>', '<', '!=', '<BEG>']
         self.COND_OPS = ['>', '<', '==', '!=']
@@ -191,6 +191,7 @@ class SQLNet(nn.Module):
         loss += self.CE(cond_num_score, cond_num_truth_var)
 
         # Evaluate the columns of conditions
+        # condition 选择的列
         T = len(cond_col_score[0])
         truth_prob = np.zeros((B, T), dtype=np.float32)
         for b in range(B):
@@ -227,6 +228,7 @@ class SQLNet(nn.Module):
                 exit(0)
 
         #Evaluate the strings of conditions
+        # 选择column后，确定具体的行特征名
         for b in range(len(gt_where)):
             for idx in range(len(gt_where[b])):
                 cond_str_truth = gt_where[b][idx]
@@ -237,8 +239,10 @@ class SQLNet(nn.Module):
                     cond_str_truth_var = Variable(data.cuda())
                 else:
                     cond_str_truth_var = Variable(data)
-                str_end = len(cond_str_truth)-1
+                str_end = len(cond_str_truth) - 1
                 cond_str_pred = cond_str_score[b, idx, :str_end]
+                # print(cond_str_pred.shape)
+                # print(cond_str_truth_var.shape)
                 loss += (self.CE(cond_str_pred, cond_str_truth_var) / (len(gt_where) * len(gt_where[b])))
 
         # Evaluate condition relationship, and / or

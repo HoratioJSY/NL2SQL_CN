@@ -11,8 +11,10 @@ class BertEmbedding(nn.Module):
         self.gpu = gpu
         self.SQL_TOK = SQL_TOK
 
-        self.tokenizer = BertTokenizer.from_pretrained('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/')
-        self.bert_model = BertModel.from_pretrained('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/')
+        # self.tokenizer = BertTokenizer.from_pretrained('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/')
+        # self.bert_model = BertModel.from_pretrained('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/')
+        self.tokenizer = BertTokenizer.from_pretrained('content/drive/My Drive/pre_trained')
+        self.bert_model = BertModel.from_pretrained('content/drive/My Drive/pre_trained')
         self.bert_model.eval()
 
     def gen_x_batch(self, q, col):
@@ -23,7 +25,11 @@ class BertEmbedding(nn.Module):
 
         # 一条Query及对应的表头，表头为列名
         for i, one_q in enumerate(q):
-            one_token = ['[CLS]'] + self.tokenizer.tokenize(''.join(one_q)) + ['[SEP]']
+            # print('one_q', one_q)
+            # one_token = ['[CLS]'] + self.tokenizer.tokenize(''.join(one_q)) + ['[SEP]']
+            one_token = ['[CLS]'] + one_q + ['[SEP]']
+            # print('one_token', one_token)
+            assert len(one_q)+2 == len(one_token)
             tokenizered_q.append(one_token)
             tokens_id_list.append(self.tokenizer.convert_tokens_to_ids(one_token))
             val_len[i] = len(one_token)
