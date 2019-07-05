@@ -13,8 +13,8 @@ class BertEmbedding(nn.Module):
 
         # self.tokenizer = BertTokenizer.from_pretrained('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/')
         # self.bert_model = BertModel.from_pretrained('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/')
-        self.tokenizer = BertTokenizer.from_pretrained('content/drive/My Drive/pre_trained')
-        self.bert_model = BertModel.from_pretrained('content/drive/My Drive/pre_trained')
+        self.tokenizer = BertTokenizer.from_pretrained('/content/drive/My Drive/pre_trained/')
+        self.bert_model = BertModel.from_pretrained('/content/drive/My Drive/pre_trained/')
         self.bert_model.eval()
 
     def gen_x_batch(self, q, col):
