@@ -1,4 +1,5 @@
 import torch
+import collections
 import torch.nn as nn
 import numpy as np
 from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM
@@ -13,9 +14,25 @@ class BertEmbedding(nn.Module):
 
         # self.tokenizer = BertTokenizer.from_pretrained('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/')
         # self.bert_model = BertModel.from_pretrained('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/')
+        # self.Token2ID = self.load_vocab('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/vocab.txt')
         self.tokenizer = BertTokenizer.from_pretrained('/content/drive/My Drive/pre_trained/')
         self.bert_model = BertModel.from_pretrained('/content/drive/My Drive/pre_trained/')
+        self.Token2ID = self.load_vocab('/content/drive/My Drive/pre_trained/vocab.txt')
         self.bert_model.eval()
+
+    def load_vocab(self, vocab_file):
+        """Loads a vocabulary file into a dictionary."""
+        Toke2ID = collections.OrderedDict()
+        index = 0
+        with open(vocab_file, "r", encoding="utf-8") as reader:
+            while True:
+                token = reader.readline()
+                if not token:
+                    break
+                token = token.strip()
+                Toke2ID[token] = index
+                index += 1
+        return Toke2ID
 
     def gen_x_batch(self, q, col):
         B = len(q)
@@ -27,7 +44,14 @@ class BertEmbedding(nn.Module):
         for i, one_q in enumerate(q):
             # print('one_q', one_q)
             # one_token = ['[CLS]'] + self.tokenizer.tokenize(''.join(one_q)) + ['[SEP]']
-            one_token = ['[CLS]'] + one_q + ['[SEP]']
+            contain_token = []
+            for tok in one_q:
+                if self.Token2ID.__contains__(tok):
+                    contain_token.append(tok)
+                else:
+                    contain_token.append('[UNK]')
+
+            one_token = ['[CLS]'] + contain_token + ['[SEP]']
             # print('one_token', one_token)
             assert len(one_q)+2 == len(one_token)
             tokenizered_q.append(one_token)
