@@ -24,11 +24,11 @@ class WordEmbedding(nn.Module):
             self.word_emb = word_emb
             print("Using fixed embedding")
 
-    def gen_x_batch(self, q, col):
+    def gen_x_batch(self, q):
         B = len(q)
         val_embs = []
         val_len = np.zeros(B, dtype=np.int64)
-        for i, (one_q, one_col) in enumerate(zip(q, col)):
+        for i, one_q in enumerate(q):
             if self.trainable:
                 q_val = [self.w2i.get(x, 0) for x in one_q]
                 # embed's index

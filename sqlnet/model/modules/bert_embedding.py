@@ -5,19 +5,16 @@ import numpy as np
 from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM
 
 class BertEmbedding(nn.Module):
-    def __init__(self, N_word, gpu, SQL_TOK, our_model):
+    def __init__(self, N_word, gpu, SQL_TOK, our_model, bert_path):
         super(BertEmbedding, self).__init__()
         self.N_word = N_word
         self.our_model = our_model
         self.gpu = gpu
         self.SQL_TOK = SQL_TOK
 
-        # self.tokenizer = BertTokenizer.from_pretrained('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/')
-        # self.bert_model = BertModel.from_pretrained('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/')
-        # self.Token2ID = self.load_vocab('/Users/horatio_jsy/pylib/NL2SQL_CN/pre_trained/vocab.txt')
-        self.tokenizer = BertTokenizer.from_pretrained('/content/drive/My Drive/pre_trained/')
-        self.bert_model = BertModel.from_pretrained('/content/drive/My Drive/pre_trained/')
-        self.Token2ID = self.load_vocab('/content/drive/My Drive/pre_trained/vocab.txt')
+        self.tokenizer = BertTokenizer.from_pretrained(bert_path)
+        self.bert_model = BertModel.from_pretrained(bert_path)
+        self.Token2ID = self.load_vocab(bert_path + 'vocab.txt')
         self.bert_model.eval()
 
     def load_vocab(self, vocab_file):
@@ -34,7 +31,7 @@ class BertEmbedding(nn.Module):
                 index += 1
         return Toke2ID
 
-    def gen_x_batch(self, q, col):
+    def gen_x_batch(self, q):
         B = len(q)
         tokenizered_q = []
         tokens_id_list = []

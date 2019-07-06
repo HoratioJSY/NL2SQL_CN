@@ -16,6 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--logdir', type=str, default='', help='Path of save experiment log')
     parser.add_argument('--learning_rate', type=float, default=1e-3, help='the overall learning rate of model')
     parser.add_argument('--use_bert', action='store_true', help='using Bert to replace word embedding')
+    parser.add_argument('--bert_path', type=str, default='/content/drive/My Drive/pre_trained/')
     args = parser.parse_args()
 
     if args.toy:
@@ -33,7 +34,7 @@ if __name__ == '__main__':
 
     if args.use_bert:
         n_word = 768
-        model = SQLNet(N_word=n_word, use_ca=args.ca, gpu=gpu)
+        model = SQLNet(N_word=n_word, use_ca=args.ca, gpu=gpu, bert_path=args.bert_path)
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0)
     else:
         n_word = 300

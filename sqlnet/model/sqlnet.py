@@ -13,7 +13,7 @@ from sqlnet.model.modules.bert_embedding import BertEmbedding
 
 class SQLNet(nn.Module):
     def __init__(self, N_word, N_h=512, N_depth=2,
-            gpu=False, use_ca=True, word_emb=None, trainable_emb=False):
+            gpu=False, use_ca=True, word_emb=None, trainable_emb=False, bert_path=None):
         super(SQLNet, self).__init__()
         self.use_ca = use_ca
         self.trainable_emb = trainable_emb
@@ -31,7 +31,7 @@ class SQLNet(nn.Module):
         if N_word == 300:
             self.embed_layer = WordEmbedding(word_emb, N_word, gpu, self.SQL_TOK, our_model=True, trainable=trainable_emb)
         else:
-            self.embed_layer = BertEmbedding(N_word, gpu, self.SQL_TOK, our_model=True)
+            self.embed_layer = BertEmbedding(N_word, gpu, self.SQL_TOK, our_model=True, bert_path=bert_path)
             print('Using Pre-trained BERT as Embedding')
 
         # Predict the number of selected columns
@@ -102,7 +102,7 @@ class SQLNet(nn.Module):
             print(col_num)
             self.sample_data = False
 
-        x_emb_var, x_len = self.embed_layer.gen_x_batch(q, col)
+        x_emb_var, x_len = self.embed_layer.gen_x_batch(q)
         col_inp_var, col_name_len, col_len = self.embed_layer.gen_col_batch(col)
 
         sel_num_score = self.sel_num.forward(x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num)
