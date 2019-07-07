@@ -12,7 +12,7 @@ from sqlnet.model.modules.where_relation import WhereRelationPredictor
 from sqlnet.model.modules.bert_embedding import BertEmbedding
 
 class SQLNet(nn.Module):
-    def __init__(self, N_word, N_h=512, N_depth=1,
+    def __init__(self, N_word, N_h=512, N_depth=2,
             gpu=False, use_ca=True, word_emb=None, trainable_emb=False, bert_path=None):
         super(SQLNet, self).__init__()
         self.use_ca = use_ca
@@ -209,7 +209,7 @@ class SQLNet(nn.Module):
         bce_loss = -torch.mean(
             3*(cond_col_truth_var * torch.log(cond_col_prob+1e-10)) +
             (1-cond_col_truth_var) * torch.log(1-cond_col_prob+1e-10))
-        loss += bce_loss
+        loss += bce_loss * 3
 
         # Evaluate the operator of conditions
         for b in range(len(truth_num)):
@@ -222,7 +222,7 @@ class SQLNet(nn.Module):
                 cond_op_truth_var = Variable(data)
             cond_op_pred = cond_op_score[b, :len(truth_num[b][5])]
             try:
-                loss += (self.CE(cond_op_pred, cond_op_truth_var) / len(truth_num))
+                loss += (self.CE(cond_op_pred, cond_op_truth_var) / len(truth_num)) * 2
             except:
                 print(cond_op_pred)
                 print(cond_op_truth_var)
@@ -244,7 +244,7 @@ class SQLNet(nn.Module):
                 cond_str_pred = cond_str_score[b, idx, :str_end]
                 # print(cond_str_pred.shape)
                 # print(cond_str_truth_var.shape)
-                loss += (self.CE(cond_str_pred, cond_str_truth_var) / (len(gt_where) * len(gt_where[b])))
+                loss += (self.CE(cond_str_pred, cond_str_truth_var) / (len(gt_where) * len(gt_where[b]))) * 5
 
         # Evaluate condition relationship, and / or
         # where_rela_truth = map(lambda x:x[6], truth_num)
