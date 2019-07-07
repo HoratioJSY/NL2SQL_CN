@@ -16,45 +16,45 @@ class SQLNetCondPredictor(nn.Module):
         self.use_ca = use_ca
         self.N_depth = N_depth + 1
 
-        self.cond_num_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
-        self.cond_num_att = nn.Linear(N_h, 1)
-        self.cond_num_out = nn.Sequential(nn.Linear(N_h, N_h),
-                nn.Tanh(), nn.Linear(N_h, 5))
-        self.cond_num_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
-        self.cond_num_col_att = nn.Linear(N_h, 1)
-        self.cond_num_col2hid1 = nn.Linear(N_h, N_depth*N_h)
-        self.cond_num_col2hid2 = nn.Linear(N_h, N_depth*N_h)
+        self.cond_num_lstm = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth, batch_first=True, dropout=0.3, bidirectional=True)
+        self.cond_num_att = nn.Linear(self.N_h, 1)
+        self.cond_num_out = nn.Sequential(nn.Linear(self.N_h, self.N_h),
+                nn.Tanh(), nn.Linear(self.N_h, 5))
+        self.cond_num_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth, batch_first=True, dropout=0.3, bidirectional=True)
+        self.cond_num_col_att = nn.Linear(self.N_h, 1)
+        self.cond_num_col2hid1 = nn.Linear(self.N_h, self.N_depth*self.N_h)
+        self.cond_num_col2hid2 = nn.Linear(self.N_h, self.N_depth*self.N_h)
 
-        self.cond_col_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
+        self.cond_col_lstm = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth, batch_first=True, dropout=0.3, bidirectional=True)
         if use_ca:
             print("Using column attention on where predicting")
-            self.cond_col_att = nn.Linear(N_h, N_h)
+            self.cond_col_att = nn.Linear(self.N_h, self.N_h)
         else:
             print("Not using column attention on where predicting")
-            self.cond_col_att = nn.Linear(N_h, 1)
-        self.cond_col_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
-        self.cond_col_out_K = nn.Linear(N_h, N_h)
-        self.cond_col_out_col = nn.Linear(N_h, N_h)
-        self.cond_col_out = nn.Sequential(nn.ReLU(), nn.Linear(N_h, 1))
+            self.cond_col_att = nn.Linear(self.N_h, 1)
+        self.cond_col_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth, batch_first=True, dropout=0.3, bidirectional=True)
+        self.cond_col_out_K = nn.Linear(self.N_h, self.N_h)
+        self.cond_col_out_col = nn.Linear(self.N_h, self.N_h)
+        self.cond_col_out = nn.Sequential(nn.ReLU(), nn.Linear(self.N_h, 1))
 
-        self.cond_op_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
+        self.cond_op_lstm = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth, batch_first=True, dropout=0.3, bidirectional=True)
         if use_ca:
-            self.cond_op_att = nn.Linear(N_h, N_h)
+            self.cond_op_att = nn.Linear(self.N_h, self.N_h)
         else:
-            self.cond_op_att = nn.Linear(N_h, 1)
-        self.cond_op_out_K = nn.Linear(N_h, N_h)
-        self.cond_op_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
-        self.cond_op_out_col = nn.Linear(N_h, N_h)
-        self.cond_op_out = nn.Sequential(nn.Linear(N_h, N_h), nn.Tanh(),
-                nn.Linear(N_h, 4))
+            self.cond_op_att = nn.Linear(self.N_h, 1)
+        self.cond_op_out_K = nn.Linear(self.N_h, self.N_h)
+        self.cond_op_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth, batch_first=True, dropout=0.3, bidirectional=True)
+        self.cond_op_out_col = nn.Linear(self.N_h, self.N_h)
+        self.cond_op_out = nn.Sequential(nn.Linear(self.N_h, self.N_h), nn.Tanh(),
+                nn.Linear(self.N_h, 4))
 
-        self.cond_str_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
-        self.cond_str_decoder = nn.LSTM(input_size=self.max_tok_num, hidden_size=N_h, num_layers=N_depth, batch_first=True, dropout=0.3)
-        self.cond_str_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth, batch_first=True, dropout=0.3, bidirectional=True)
-        self.cond_str_out_g = nn.Linear(N_h, N_h)
-        self.cond_str_out_h = nn.Linear(N_h, N_h)
-        self.cond_str_out_col = nn.Linear(N_h, N_h)
-        self.cond_str_out = nn.Sequential(nn.ReLU(), nn.Linear(N_h, 1))
+        self.cond_str_lstm = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth, batch_first=True, dropout=0.3, bidirectional=True)
+        self.cond_str_decoder = nn.LSTM(input_size=self.max_tok_num, hidden_size=self.N_h, num_layers=self.N_depth, batch_first=True, dropout=0.3)
+        self.cond_str_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth, batch_first=True, dropout=0.3, bidirectional=True)
+        self.cond_str_out_g = nn.Linear(self.N_h, self.N_h)
+        self.cond_str_out_h = nn.Linear(self.N_h, self.N_h)
+        self.cond_str_out_col = nn.Linear(self.N_h, self.N_h)
+        self.cond_str_out = nn.Sequential(nn.ReLU(), nn.Linear(self.N_h, 1))
 
         self.softmax = nn.Softmax(dim=-1)
 
