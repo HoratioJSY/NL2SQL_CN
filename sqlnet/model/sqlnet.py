@@ -12,7 +12,7 @@ from sqlnet.model.modules.where_relation import WhereRelationPredictor
 from sqlnet.model.modules.bert_embedding import BertEmbedding
 
 class SQLNet(nn.Module):
-    def __init__(self, N_word, N_h=512, N_depth=1,
+    def __init__(self, N_word, N_h=512, N_depth=2,
             gpu=False, use_ca=True, word_emb=None, trainable_emb=False, bert_path=None):
         super(SQLNet, self).__init__()
         self.use_ca = use_ca
