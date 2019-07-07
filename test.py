@@ -10,6 +10,9 @@ if __name__ == '__main__':
     parser.add_argument('--ca', action='store_true', default=True, help='Whether use column attention.')
     parser.add_argument('--train_emb', action='store_true', help='Use trained word embedding for SQLNet.')
     parser.add_argument('--output_dir', type=str, default='./result/', help='Output path of prediction result')
+    parser.add_argument('--learning_rate', type=float, default=1e-3, help='the overall learning rate of model')
+    parser.add_argument('--use_bert', action='store_true', help='using Bert to replace word embedding')
+    parser.add_argument('--bert_path', type=str, default='/content/drive/My Drive/pre_trained/')
     args = parser.parse_args()
 
     n_word=300
@@ -26,6 +29,16 @@ if __name__ == '__main__':
 
     word_emb = load_word_emb('data/char_embedding.json')
     model = SQLNet(word_emb, N_word=n_word, use_ca=args.ca, gpu=gpu, trainable_emb=args.train_emb)
+    
+    if args.use_bert:
+        n_word = 768
+        model = SQLNet(N_word=n_word, use_ca=args.ca, gpu=gpu, bert_path=args.bert_path)
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=0)
+    else:
+        n_word = 300
+        word_emb = load_word_emb('data/char_embedding.json')
+        model = SQLNet(N_word=n_word, use_ca=args.ca, gpu=gpu, word_emb=word_emb, trainable_emb=args.train_emb)
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=0)
 
     model_path = '../drive/My Drive/saved_model/best_model'
     print("Loading from %s" % model_path)
