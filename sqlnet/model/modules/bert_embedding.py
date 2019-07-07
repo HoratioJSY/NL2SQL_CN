@@ -18,6 +18,7 @@ class BertEmbedding(nn.Module):
         self.bert_model.eval()
         if self.gpu:
             self.bert_model.to('cuda')
+            print('Using BERT in CUDA')
 
     def load_vocab(self, vocab_file):
         """Loads a vocabulary file into a dictionary."""

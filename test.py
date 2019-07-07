@@ -27,9 +27,6 @@ if __name__ == '__main__':
 
     dev_sql, dev_table, dev_db, test_sql, test_table, test_db = load_dataset(use_small=use_small, mode='test')
 
-    word_emb = load_word_emb('data/char_embedding.json')
-    model = SQLNet(word_emb, N_word=n_word, use_ca=args.ca, gpu=gpu, trainable_emb=args.train_emb)
-    
     if args.use_bert:
         n_word = 768
         model = SQLNet(N_word=n_word, use_ca=args.ca, gpu=gpu, bert_path=args.bert_path)
