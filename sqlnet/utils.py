@@ -50,40 +50,68 @@ def load_dataset(use_small=False, mode='train'):
         return dev_sql, dev_table, dev_db, test_sql, test_table, test_db
 
 
-def to_batch_seq(sql_data, table_data, idxes, st, ed, ret_vis_data=False):
+def to_batch_seq(sql_data, table_data, idxes, st, ed, raw_data=False):
     q_seq = []
     col_seq = []
     col_num = []
     ans_seq = []
     gt_cond_seq = []
-    vis_seq = []
+    raw_seq = []
     sel_num_seq = []
+    table_content = []
+
     for i in range(st, ed):
         sql = sql_data[idxes[i]]
+
+        # SELECT 子句选定 Column 的数量
         sel_num = len(sql['sql']['sel'])
         sel_num_seq.append(sel_num)
+
+        # WHERE 子句选定 Condition 的数量，没参与模型训练？？？
         conds_num = len(sql['sql']['conds'])
-        # print('question:', sql['question'])
+
+        # 抽取问句，并做字符级的分割
         one_question = ''.join(sql['question'].split())
         q_seq.append([char for char in one_question])
+
+        # 抽取 SQL 语句对应表格的表头，其中 table_data 曾单独取出 id 构造字典
         col_seq.append([[char for char in ''.join(header.split())] for header in table_data[sql['table_id']]['header']])
+
+        # 抽取表格列数
         col_num.append(len(table_data[sql['table_id']]['header']))
+
+        # 作为标注来计算模型损失，没有加入 WHERE value
         ans_seq.append(
             (
-            len(sql['sql']['agg']),
-            sql['sql']['sel'],
-            sql['sql']['agg'],
-            conds_num,
-            tuple(x[0] for x in sql['sql']['conds']),
-            tuple(x[1] for x in sql['sql']['conds']),
-            sql['sql']['cond_conn_op'],
-            ))
+                len(sql['sql']['agg']),
+                sql['sql']['sel'],
+                sql['sql']['agg'],
+                conds_num,
+                # WHERE Column
+                tuple(x[0] for x in sql['sql']['conds']),
+                # WHERE Operator
+                tuple(x[1] for x in sql['sql']['conds']),
+                sql['sql']['cond_conn_op'],
+            )
+        )
+
+        # 访问表格内容，忽略内容类型
+        # table_content_types = table_data[sql['table_id']]['types']
+        one_table = []
+        table_content_rows = table_data[sql['table_id']]['rows']
+        for content_column in range(col_num[-1]):
+            one_table.append([x[content_column] for x in table_content_rows])
+        table_content.append(one_table)
+
+        # 另外用一个变量保存所有 WHERE Condition
         gt_cond_seq.append(sql['sql']['conds'])
-        vis_seq.append((sql['question'], table_data[sql['table_id']]['header']))
-    if ret_vis_data:
-        return q_seq, sel_num_seq, col_seq, col_num, ans_seq, gt_cond_seq, vis_seq
+
+        # 原始问题与表头
+        raw_seq.append((sql['question'], table_data[sql['table_id']]['header']))
+    if raw_data:
+        return q_seq, sel_num_seq, col_seq, col_num, ans_seq, gt_cond_seq, raw_seq, table_content
     else:
-        return q_seq, sel_num_seq, col_seq, col_num, ans_seq, gt_cond_seq
+        return q_seq, sel_num_seq, col_seq, col_num, ans_seq, gt_cond_seq, table_content
 
 
 def to_batch_seq_test(sql_data, table_data, idxes, st, ed):
@@ -121,13 +149,8 @@ def epoch_train(model, optimizer, batch_size, sql_data, table_data):
     for st in tqdm(range(len(sql_data)//batch_size+1)):
         ed = (st+1)*batch_size if (st+1)*batch_size < len(perm) else len(perm)
         st = st * batch_size
-        q_seq, gt_sel_num, col_seq, col_num, ans_seq, gt_cond_seq = to_batch_seq(sql_data, table_data, perm, st, ed)
-        # q_seq: char-based sequence of question
-        # gt_sel_num: number of selected columns and aggregation functions
-        # col_seq: char-based column name
-        # col_num: number of headers in one table
-        # ans_seq: (sel, number of conds, sel list in conds, op list in conds)
-        # gt_cond_seq: ground truth of conds
+        q_seq, gt_sel_num, col_seq, col_num, ans_seq, gt_cond_seq, table_content = to_batch_seq(sql_data, table_data, perm, st, ed)
+
         gt_where_seq = model.generate_gt_where_seq_test(q_seq, gt_cond_seq)
         gt_sel_seq = [x[1] for x in ans_seq]
         score = model.forward(q_seq, col_seq, col_num, gt_where=gt_where_seq, gt_cond=gt_cond_seq, gt_sel=gt_sel_seq, gt_sel_num=gt_sel_num)
@@ -168,15 +191,9 @@ def epoch_acc(model, batch_size, sql_data, table_data, db_path):
     for st in tqdm(range(len(sql_data)//batch_size+1)):
         ed = (st+1)*batch_size if (st+1)*batch_size < len(perm) else len(perm)
         st = st * batch_size
-        q_seq, gt_sel_num, col_seq, col_num, ans_seq, gt_cond_seq, raw_data = \
-            to_batch_seq(sql_data, table_data, perm, st, ed, ret_vis_data=True)
-        # q_seq: char-based sequence of question
-        # gt_sel_num: number of selected columns and aggregation functions, new added field
-        # col_seq: char-based column name
-        # col_num: number of headers in one table
-        # ans_seq: (sel, number of conds, sel list in conds, op list in conds)
-        # gt_cond_seq: ground truth of conditions
-        # raw_data: ori question, headers, sql
+        q_seq, gt_sel_num, col_seq, col_num, ans_seq, gt_cond_seq, raw_data, table_content = \
+            to_batch_seq(sql_data, table_data, perm, st, ed, raw_data=True)
+
         query_gt, table_ids = to_batch_query(sql_data, perm, st, ed)
         # query_gt: ground truth of sql, data['sql'], containing sel, agg, conds:{sel, op, value}
         raw_q_seq = [x[0] for x in raw_data] # original question
