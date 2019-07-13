@@ -203,7 +203,7 @@ class SQLNetCondPredictor(nn.Module):
         cond_op_score = self.cond_op_out(self.cond_op_out_K(K_cond_op) +
                 self.cond_op_out_col(col_emb)).squeeze()
 
-        # Predict the string of conditions，预测行名
+        # Predict the value of conditions
         h_str_enc, _ = run_lstm(self.cond_str_lstm, x_emb_var, x_len)
         e_cond_col, _ = col_name_encode(col_inp_var, col_name_len,
                 col_len, self.cond_str_name_enc)
