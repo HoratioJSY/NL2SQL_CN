@@ -209,7 +209,7 @@ class SQLNet(nn.Module):
         bce_loss = -torch.mean(
             3*(cond_col_truth_var * torch.log(cond_col_prob+1e-10)) +
             (1-cond_col_truth_var) * torch.log(1-cond_col_prob+1e-10))
-        loss += bce_loss * 3
+        loss += bce_loss
 
         # Evaluate the operator of conditions
         for b in range(len(truth_num)):
@@ -222,7 +222,7 @@ class SQLNet(nn.Module):
                 cond_op_truth_var = Variable(data)
             cond_op_pred = cond_op_score[b, :len(truth_num[b][5])]
             try:
-                loss += (self.CE(cond_op_pred, cond_op_truth_var) / len(truth_num)) * 2
+                loss += (self.CE(cond_op_pred, cond_op_truth_var) / len(truth_num))
             except:
                 print(cond_op_pred)
                 print(cond_op_truth_var)
@@ -269,7 +269,7 @@ class SQLNet(nn.Module):
             cond_str = []
             for cond in conds:
                 cond_str.append(header[cond[0]] + ' ' +
-                    self.COND_OPS[cond[1]] + ' ' + unicode(cond[2]).lower())
+                    self.COND_OPS[cond[1]] + ' ' + str(cond[2]).lower())
             return 'WHERE ' + ' AND '.join(cond_str)
 
         tot_err = sel_num_err = agg_err = sel_err = 0.0

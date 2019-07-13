@@ -36,8 +36,8 @@ def load_data(sql_paths, table_paths, use_small=False):
     return ret_sql_data, table_data
 
 
-def load_dataset(toy=False, use_small=False, mode='train'):
-    print ("Loading dataset")
+def load_dataset(use_small=False, mode='train'):
+    print("Loading dataset")
     dev_sql, dev_table = load_data('data/val/val.json', 'data/val/val.tables.json', use_small=use_small)
     dev_db = 'data/val/val.db'
     if mode == 'train':
@@ -115,8 +115,8 @@ def to_batch_query(sql_data, idxes, st, ed):
 
 def epoch_train(model, optimizer, batch_size, sql_data, table_data):
     model.train()
-    perm=np.random.permutation(len(sql_data))
-    perm = list(range(len(sql_data)))
+    perm = np.random.permutation(len(sql_data))
+    # perm = list(range(len(sql_data)))
     cum_loss = 0.0
     for st in tqdm(range(len(sql_data)//batch_size+1)):
         ed = (st+1)*batch_size if (st+1)*batch_size < len(perm) else len(perm)
@@ -209,11 +209,4 @@ def load_word_emb(file_name):
     ret = json.load(f)
     f.close()
     print('Vocabulary size: ', len(ret))
-    # ret = {}
-    # with open(file_name, encoding='latin') as inf:
-    #     ret = json.load(inf)
-    #     for idx, line in enumerate(inf):
-    #         info = line.strip().split(' ')
-    #         if info[0].lower() not in ret:
-    #             ret[info[0]] = np.array([float(x) for x in info[1:]])
     return ret
