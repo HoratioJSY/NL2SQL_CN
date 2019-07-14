@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from torch.autograd import Variable
 
 def run_lstm(lstm, inp, inp_len, hidden=None):
     # Run the LSTM using packed sequence.
@@ -11,8 +10,8 @@ def run_lstm(lstm, inp, inp_len, hidden=None):
     sort_inp_len = inp_len[sort_perm]
     sort_perm_inv = np.argsort(sort_perm)
     if inp.is_cuda:
-        sort_perm = torch.LongTensor(sort_perm).cuda()
-        sort_perm_inv = torch.LongTensor(sort_perm_inv).cuda()
+        sort_perm = torch.LongTensor(sort_perm).to('cuda')
+        sort_perm_inv = torch.LongTensor(sort_perm_inv).to('cuda')
 
     lstm_inp = nn.utils.rnn.pack_padded_sequence(inp[sort_perm],
             sort_inp_len, batch_first=True)
@@ -36,12 +35,12 @@ def col_name_encode(name_inp_var, name_len, col_len, enc_lstm):
     ret = torch.FloatTensor(
             len(col_len), max(col_len), name_out.size()[1]).zero_()
     if name_out.is_cuda:
-        ret = ret.cuda()
+        ret = ret.to('cuda')
 
     st = 0
     for idx, cur_len in enumerate(col_len):
         ret[idx, :cur_len] = name_out.data[st:st+cur_len]
         st += cur_len
-    ret_var = Variable(ret)
+    ret_var = ret
 
     return ret_var, col_len

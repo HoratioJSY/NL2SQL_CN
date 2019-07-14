@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
 import numpy as np
 from sqlnet.model.modules.word_embedding import WordEmbedding
 from sqlnet.model.modules.aggregator_predict import AggPredictor
@@ -55,7 +53,7 @@ class SQLNet(nn.Module):
         self.log_softmax = nn.LogSoftmax()
         self.bce_logit = nn.BCEWithLogitsLoss()
         if gpu:
-            self.cuda()
+            self.to('cuda')
 
     def generate_gt_where_seq_test(self, q, gt_cond_seq):
         ret_seq = []
@@ -141,21 +139,19 @@ class SQLNet(nn.Module):
         sel_num_truth = [x[0] for x in truth_num]
         sel_num_truth = torch.from_numpy(np.array(sel_num_truth))
         if self.gpu:
-            sel_num_truth = Variable(sel_num_truth.cuda())
+            sel_num_truth = sel_num_truth.to('cuda')
         else:
-            sel_num_truth = Variable(sel_num_truth)
+            sel_num_truth = sel_num_truth
         loss += self.CE(sel_num_score, sel_num_truth)
 
         # Evaluate select column
         T = len(sel_score[0])
-        truth_prob = np.zeros((B,T), dtype=np.float32)
+        truth_prob = np.zeros((B, T), dtype=np.float32)
         for b in range(B):
             truth_prob[b][list(truth_num[b][1])] = 1
-        data = torch.from_numpy(truth_prob)
+        sel_col_truth_var = torch.from_numpy(truth_prob)
         if self.gpu:
-            sel_col_truth_var = Variable(data.cuda())
-        else:
-            sel_col_truth_var = Variable(data)
+            sel_col_truth_var = sel_col_truth_var.to('cuda')
         sigm = nn.Sigmoid()
         sel_col_prob = sigm(sel_score)
         bce_loss = -torch.mean(
@@ -166,11 +162,9 @@ class SQLNet(nn.Module):
 
         # Evaluate select aggregation
         for b in range(len(truth_num)):
-            data = torch.from_numpy(np.array(truth_num[b][2]))
+            sel_agg_truth_var = torch.from_numpy(np.array(truth_num[b][2]))
             if self.gpu:
-                sel_agg_truth_var = Variable(data.cuda())
-            else:
-                sel_agg_truth_var = Variable(data)
+                sel_agg_truth_var = sel_agg_truth_var.to('cuda')
             sel_agg_pred = agg_score[b, :len(truth_num[b][1])]
             loss += (self.CE(sel_agg_pred, sel_agg_truth_var)) / len(truth_num)
 
@@ -179,16 +173,14 @@ class SQLNet(nn.Module):
         # Evaluate the number of conditions
         # cond_num_truth = map(lambda x:x[3], truth_num)
         cond_num_truth = [x[3] for x in truth_num]
-        data = torch.from_numpy(np.array(cond_num_truth))
+        cond_num_truth_var = torch.from_numpy(np.array(cond_num_truth))
         if self.gpu:
             try:
-                cond_num_truth_var = Variable(data.cuda())
+                cond_num_truth_var = cond_num_truth_var.to('cuda')
             except:
                 print("cond_num_truth_var error")
-                print(data)
+                print(cond_num_truth_var)
                 exit(0)
-        else:
-            cond_num_truth_var = Variable(data)
         loss += self.CE(cond_num_score, cond_num_truth_var)
 
         # Evaluate the columns of conditions
@@ -198,11 +190,9 @@ class SQLNet(nn.Module):
         for b in range(B):
             if len(truth_num[b][4]) > 0:
                 truth_prob[b][list(truth_num[b][4])] = 1
-        data = torch.from_numpy(truth_prob)
+        cond_col_truth_var = torch.from_numpy(truth_prob)
         if self.gpu:
-            cond_col_truth_var = Variable(data.cuda())
-        else:
-            cond_col_truth_var = Variable(data)
+            cond_col_truth_var = cond_col_truth_var.to('cuda')
 
         sigm = nn.Sigmoid()
         cond_col_prob = sigm(cond_col_score)
@@ -215,11 +205,9 @@ class SQLNet(nn.Module):
         for b in range(len(truth_num)):
             if len(truth_num[b][5]) == 0:
                 continue
-            data = torch.from_numpy(np.array(truth_num[b][5]))
+            cond_op_truth_var = torch.from_numpy(np.array(truth_num[b][5]))
             if self.gpu:
-                cond_op_truth_var = Variable(data.cuda())
-            else:
-                cond_op_truth_var = Variable(data)
+                cond_op_truth_var = cond_op_truth_var.to('cuda')
             cond_op_pred = cond_op_score[b, :len(truth_num[b][5])]
             try:
                 loss += (self.CE(cond_op_pred, cond_op_truth_var) / len(truth_num))
@@ -235,11 +223,9 @@ class SQLNet(nn.Module):
                 cond_str_truth = gt_where[b][idx]
                 if len(cond_str_truth) == 1:
                     continue
-                data = torch.from_numpy(np.array(cond_str_truth[1:]))
+                cond_str_truth_var = torch.from_numpy(np.array(cond_str_truth[1:]))
                 if self.gpu:
-                    cond_str_truth_var = Variable(data.cuda())
-                else:
-                    cond_str_truth_var = Variable(data)
+                    cond_str_truth_var = cond_str_truth_var.to('cuda')
                 str_end = len(cond_str_truth) - 1
                 cond_str_pred = cond_str_score[b, idx, :str_end]
                 # print(cond_str_pred.shape)
@@ -249,16 +235,14 @@ class SQLNet(nn.Module):
         # Evaluate condition relationship, and / or
         # where_rela_truth = map(lambda x:x[6], truth_num)
         where_rela_truth = [x[6] for x in truth_num]
-        data = torch.from_numpy(np.array(where_rela_truth))
+        where_rela_truth = torch.from_numpy(np.array(where_rela_truth))
         if self.gpu:
             try:
-                where_rela_truth = Variable(data.cuda())
+                where_rela_truth = where_rela_truth.to('cuda')
             except:
                 print("where_rela_truth error")
-                print(data)
+                print(where_rela_truth)
                 exit(0)
-        else:
-            where_rela_truth = Variable(data)
         loss += self.CE(where_rela_score, where_rela_truth)
         return loss
 
