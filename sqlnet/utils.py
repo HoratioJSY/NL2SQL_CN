@@ -16,7 +16,7 @@ def load_data(sql_paths, table_paths, use_small=False):
         with open(SQL_PATH, encoding='utf-8') as inf:
             for idx, line in enumerate(inf):
                 sql = json.loads(line.strip())
-                if use_small and idx >= 100:
+                if use_small and idx >= 10:
                     break
                 sql_data.append(sql)
         print("Loaded %d data from %s" % (len(sql_data), SQL_PATH))
@@ -120,6 +120,7 @@ def to_batch_seq_test(sql_data, table_data, idxes, st, ed):
     col_num = []
     raw_seq = []
     table_ids = []
+    table_content = []
     for i in range(st, ed):
         sql = sql_data[idxes[i]]
         one_question = ''.join(sql['question'].split())
@@ -127,8 +128,14 @@ def to_batch_seq_test(sql_data, table_data, idxes, st, ed):
         col_seq.append([[char for char in ''.join(header.split())] for header in table_data[sql['table_id']]['header']])
         col_num.append(len(table_data[sql['table_id']]['header']))
         raw_seq.append(sql['question'])
-        table_ids.append(sql_data[idxes[i]]['table_id'])
-    return q_seq, col_seq, col_num, raw_seq, table_ids
+        table_ids.append(sql['table_id'])
+
+        one_table = []
+        table_content_rows = table_data[table_ids[-1]]['rows']
+        for content_column in range(col_num[-1]):
+            one_table.append([x[content_column] for x in table_content_rows])
+        table_content.append(one_table)
+    return q_seq, col_seq, col_num, raw_seq, table_ids, table_content
 
 
 def to_batch_query(sql_data, idxes, st, ed):
@@ -149,11 +156,14 @@ def epoch_train(model, optimizer, batch_size, sql_data, table_data):
     for st in tqdm(range(len(sql_data)//batch_size+1)):
         ed = (st+1)*batch_size if (st+1)*batch_size < len(perm) else len(perm)
         st = st * batch_size
-        q_seq, gt_sel_num, col_seq, col_num, ans_seq, gt_cond_seq, table_content = to_batch_seq(sql_data, table_data, perm, st, ed)
+
+        q_seq, gt_sel_num, col_seq, col_num, ans_seq, gt_cond_seq, \
+            table_content = to_batch_seq(sql_data, table_data, perm, st, ed)
 
         gt_where_seq = model.generate_gt_where_seq_test(q_seq, gt_cond_seq)
         gt_sel_seq = [x[1] for x in ans_seq]
-        score = model.forward(q_seq, col_seq, col_num, gt_where=gt_where_seq, gt_cond=gt_cond_seq, gt_sel=gt_sel_seq, gt_sel_num=gt_sel_num)
+        score = model.forward(q_seq, col_seq, col_num, table_content, gt_where=gt_where_seq, gt_cond=gt_cond_seq,
+                              gt_sel=gt_sel_seq, gt_sel_num=gt_sel_num)
         # sel_num_score, sel_col_score, sel_agg_score, cond_score, cond_rela_score
 
         # compute loss
@@ -172,8 +182,8 @@ def predict_test(model, batch_size, sql_data, table_data, output_path):
     for st in tqdm(range(len(sql_data)//batch_size+1)):
         ed = (st+1)*batch_size if (st+1)*batch_size < len(perm) else len(perm)
         st = st * batch_size
-        q_seq, col_seq, col_num, raw_q_seq, table_ids = to_batch_seq_test(sql_data, table_data, perm, st, ed)
-        score = model.forward(q_seq, col_seq, col_num)
+        q_seq, col_seq, col_num, raw_q_seq, table_ids, table_content = to_batch_seq_test(sql_data, table_data, perm, st, ed)
+        score = model.forward(q_seq, col_seq, col_num, table_content)
         sql_preds = model.gen_query(score, q_seq, col_seq, raw_q_seq)
         for sql_pred in sql_preds:
             sql_pred = eval(str(sql_pred))
@@ -198,13 +208,13 @@ def epoch_acc(model, batch_size, sql_data, table_data, db_path):
         # query_gt: ground truth of sql, data['sql'], containing sel, agg, conds:{sel, op, value}
         raw_q_seq = [x[0] for x in raw_data] # original question
         try:
-            score = model.forward(q_seq, col_seq, col_num)
+            score = model.forward(q_seq, col_seq, col_num, table_content)
             pred_queries = model.gen_query(score, q_seq, col_seq, raw_q_seq)
             # generate predicted format
             one_err, tot_err = model.check_acc(raw_data, pred_queries, query_gt)
         except:
             badcase += 1
-            print ('badcase', badcase)
+            print('badcase', badcase)
             continue
         one_acc_num += (ed-st-one_err)
         tot_acc_num += (ed-st-tot_err)
@@ -221,7 +231,7 @@ def epoch_acc(model, batch_size, sql_data, table_data, db_path):
 
 
 def load_word_emb(file_name):
-    print ('Loading word embedding from %s'%file_name)
+    print('Loading word embedding from %s'%file_name)
     f = open(file_name)
     ret = json.load(f)
     f.close()

@@ -1,10 +1,10 @@
-import json
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
 import numpy as np
 from sqlnet.model.modules.net_utils import run_lstm, col_name_encode
+from sqlnet.model.modules.bert_embedding import BertEmbedding
+from sqlnet.model.modules.word_embedding import WordEmbedding
+
 
 class SQLNetCondPredictor(nn.Module):
     def __init__(self, N_word, N_h, N_depth, max_col_num, max_tok_num, use_ca, gpu):
@@ -16,12 +16,14 @@ class SQLNetCondPredictor(nn.Module):
         self.use_ca = use_ca
         self.N_depth = N_depth + 1
 
+        # predict condition number
         self.cond_num_lstm = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth,
                                      batch_first=True, dropout=0.3, bidirectional=True)
         self.cond_num_att = nn.Linear(self.N_h, 1)
         self.cond_num_out = nn.Sequential(nn.Linear(self.N_h, self.N_h),
                 nn.Tanh(), nn.Linear(self.N_h, 5))
 
+        # predict condition column
         self.cond_num_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth,
                                          batch_first=True, dropout=0.3, bidirectional=True)
         self.cond_num_col_att = nn.Linear(self.N_h, 1)
@@ -43,6 +45,7 @@ class SQLNetCondPredictor(nn.Module):
         self.cond_col_out_col = nn.Linear(self.N_h, self.N_h)
         self.cond_col_out = nn.Sequential(nn.ReLU(), nn.Linear(self.N_h, 1))
 
+        # predict condition operator
         self.cond_op_lstm = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth,
                                     batch_first=True, dropout=0.3, bidirectional=True)
         if use_ca:
@@ -54,9 +57,9 @@ class SQLNetCondPredictor(nn.Module):
         self.cond_op_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth,
                                         batch_first=True, dropout=0.3, bidirectional=True)
         self.cond_op_out_col = nn.Linear(self.N_h, self.N_h)
-        self.cond_op_out = nn.Sequential(nn.Linear(self.N_h, self.N_h), nn.Tanh(),
-                nn.Linear(self.N_h, 4))
+        self.cond_op_out = nn.Sequential(nn.Linear(self.N_h, self.N_h), nn.Tanh(), nn.Linear(self.N_h, 4))
 
+        # predict condition value
         self.cond_str_lstm = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth,
                                      batch_first=True, dropout=0.3, bidirectional=True)
         self.cond_str_decoder = nn.LSTM(input_size=self.max_tok_num, hidden_size=self.N_h, num_layers=self.N_depth,
@@ -91,16 +94,14 @@ class SQLNetCondPredictor(nn.Module):
                 ret_array[b, idx+1:, 0, 1] = 1
                 ret_len[b, idx+1:] = 1
 
-        ret_inp = torch.from_numpy(ret_array)
+        ret_inp_var = torch.from_numpy(ret_array)
         if self.gpu:
-            ret_inp = ret_inp.cuda()
-        ret_inp_var = Variable(ret_inp)
+            ret_inp_var = ret_inp_var.cuda()
 
         return ret_inp_var, ret_len #[B, IDX, max_len, max_tok_num]
 
-
     def forward(self, x_emb_var, x_len, col_inp_var, col_name_len,
-            col_len, col_num, gt_where, gt_cond):
+            col_len, table_content, gt_where, gt_cond):
         max_x_len = max(x_len)
         B = len(x_len)
 
@@ -118,7 +119,7 @@ class SQLNetCondPredictor(nn.Module):
         cond_num_h2 = self.cond_num_col2hid2(K_num_col).view(B, 2*self.N_depth, self.N_h//2).transpose(0, 1).contiguous()
 
         h_num_enc, _ = run_lstm(self.cond_num_lstm, x_emb_var, x_len,
-                hidden=(cond_num_h1, cond_num_h2))
+                                hidden=(cond_num_h1, cond_num_h2))
 
         num_att_val = self.cond_num_att(h_num_enc).squeeze()
 
@@ -130,7 +131,7 @@ class SQLNetCondPredictor(nn.Module):
         K_cond_num = (h_num_enc * num_att.unsqueeze(2).expand_as(h_num_enc)).sum(1)
         cond_num_score = self.cond_num_out(K_cond_num)
 
-        #Predict the columns of conditions
+        # Predict the columns of conditions
         e_cond_col, _ = col_name_encode(col_inp_var, col_name_len, col_len, self.cond_col_name_enc)
         h_col_enc, _ = run_lstm(self.cond_col_lstm, x_emb_var, x_len)
 
@@ -159,8 +160,7 @@ class SQLNetCondPredictor(nn.Module):
             if num < max_col_num:
                 cond_col_score[b, num:] = -100
 
-
-        #Predict the operator of conditions
+        # Predict the operator of conditions
         chosen_col_gt = []
         if gt_cond is None:
             cond_nums = np.argmax(cond_num_score.data.cpu().numpy(), axis=1)
@@ -242,9 +242,9 @@ class SQLNetCondPredictor(nn.Module):
             init_inp = np.zeros((B*4, 1, self.max_tok_num), dtype=np.float32)
             init_inp[:,0,0] = 1  #Set the <BEG> token
             if self.gpu:
-                cur_inp = Variable(torch.from_numpy(init_inp).cuda())
+                cur_inp = torch.from_numpy(init_inp).to('cuda')
             else:
-                cur_inp = Variable(torch.from_numpy(init_inp))
+                cur_inp = torch.from_numpy(init_inp)
             cur_h = None
             while t < 50:
                 if cur_h:
@@ -264,12 +264,11 @@ class SQLNetCondPredictor(nn.Module):
 
                 _, ans_tok_var = cur_cond_str_score.view(B*4, max_x_len).max(1)
                 ans_tok = ans_tok_var.data.cpu()
-                data = torch.zeros(B*4, self.max_tok_num).scatter_(
+                cur_inp = torch.zeros(B*4, self.max_tok_num).scatter_(
                         1, ans_tok.unsqueeze(1), 1)
                 if self.gpu:  #To one-hot
-                    cur_inp = Variable(data.cuda())
-                else:
-                    cur_inp = Variable(data)
+                    cur_inp = cur_inp.to('cuda')
+
                 cur_inp = cur_inp.unsqueeze(1)
 
                 t += 1

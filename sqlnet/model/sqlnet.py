@@ -79,7 +79,7 @@ class SQLNet(nn.Module):
             ret_seq.append(record_cond)
         return ret_seq
 
-    def forward(self, q, col, col_num, gt_where=None, gt_cond=None, gt_sel=None, gt_sel_num=None):
+    def forward(self, q, col, col_num, table_content, gt_where=None, gt_cond=None, gt_sel=None, gt_sel_num=None):
         """
         x_emb_var: embedding of each question
         x_len: length of each question
@@ -124,9 +124,9 @@ class SQLNet(nn.Module):
                                                         col_inp_var, col_name_len, col_len, col_num)
 
         cond_score = self.cond_pred.forward(x_emb_var, x_len, col_inp_var,
-                                            col_name_len, col_len, col_num, gt_where, gt_cond)
+                                            col_name_len, col_len, table_content, gt_where, gt_cond)
 
-        return (sel_num_score, sel_score, agg_score, cond_score, where_rela_score)
+        return sel_num_score, sel_score, agg_score, cond_score, where_rela_score
 
     def loss(self, score, truth_num, gt_where):
         sel_num_score, sel_score, agg_score, cond_score, where_rela_score = score
