@@ -120,3 +120,25 @@ class BertEmbedding(nn.Module):
         # print('hidden state size2:', hidden_state.shape)
 
         return hidden_state, val_len
+
+    def gen_table_batch(self, table_content):
+        # table_content = [[[str1, str2, ...], column2, ...], table2, ...]
+        tokenizered_chr = []
+        value_num_list = []
+        column_num = np.zeros(len(table_content))
+
+        for i, table in enumerate(table_content):
+            column_num[i] = len(table)
+            value_num = np.zeros(len(table))
+            for j, column_content in enumerate(table):
+                value_num[j] = len(column_content)
+                contain_token = ['[CLS]']
+                for value in column_content:
+                    for token in value:
+                        if self.Token2ID.__contains__(token):
+                            contain_token.append(token)
+                        else:
+                            contain_token.append('[UNK]')
+                    contain_token = contain_token + ['[SEP]']
+                tokenizered_chr.append(contain_token)
+            value_num_list.append(value_num)
