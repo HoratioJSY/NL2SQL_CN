@@ -4,7 +4,7 @@ import numpy as np
 from sqlnet.model.modules.word_embedding import WordEmbedding
 from sqlnet.model.modules.aggregator_predict import AggPredictor
 from sqlnet.model.modules.selection_predict import SelPredictor
-from sqlnet.model.modules.sqlnet_condition_predict import SQLNetCondPredictor
+from sqlnet.model.modules.condition_predict import SQLNetCondPredictor
 from sqlnet.model.modules.select_number import SelNumPredictor
 from sqlnet.model.modules.where_relation import WhereRelationPredictor
 from sqlnet.model.modules.bert_embedding import BertEmbedding
@@ -42,7 +42,7 @@ class SQLNet(nn.Module):
         self.agg_pred = AggPredictor(N_word, N_h, N_depth, use_ca=use_ca)
 
         #Predict number of conditions, condition columns, condition operations and condition values
-        self.cond_pred = SQLNetCondPredictor(N_word, N_h, N_depth, self.max_col_num, self.max_tok_num, use_ca, gpu)
+        self.cond_pred = SQLNetCondPredictor(N_word, N_h, N_depth, self.max_col_num, self.max_tok_num, use_ca, gpu, self.embed_layer)
 
         # Predict condition relationship, like 'and', 'or'
         self.where_rela_pred = WhereRelationPredictor(N_word, N_h, N_depth, use_ca=use_ca)
@@ -100,6 +100,7 @@ class SQLNet(nn.Module):
             print(col_num)
             self.sample_data = False
 
+        # x_len is a list of all query length, col_len is a list of all column length
         x_emb_var, x_len = self.embed_layer.gen_x_batch(q)
         col_inp_var, col_name_len, col_len = self.embed_layer.gen_col_batch(col)
 

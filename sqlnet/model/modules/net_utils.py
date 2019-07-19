@@ -28,8 +28,7 @@ def run_lstm(lstm, inp, inp_len, hidden=None):
 
 
 def col_name_encode(name_inp_var, name_len, col_len, enc_lstm):
-    #Encode the columns.
-    #The embedding of a column name is the last state of its LSTM output.
+    # The embedding of a column name is the last state of its LSTM output.
     name_hidden, _ = run_lstm(enc_lstm, name_inp_var, name_len)
     name_out = name_hidden[tuple(range(len(name_len))), name_len-1]
     ret = torch.FloatTensor(

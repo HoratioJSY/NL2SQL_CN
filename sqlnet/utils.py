@@ -97,6 +97,7 @@ def to_batch_seq(sql_data, table_data, idxes, st, ed, raw_data=False):
 
         # 访问表格内容，忽略内容类型
         # table_content_types = table_data[sql['table_id']]['types']
+        # table_content = [[[str1, str2, ...], column2, ...], table2, ...]
         one_table = []
         table_content_rows = table_data[sql['table_id']]['rows']
         for content_column in range(col_num[-1]):
