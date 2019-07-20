@@ -12,10 +12,10 @@ if __name__ == '__main__':
     parser.add_argument('--toy', action='store_true', help='If set, use small data for fast debugging')
     parser.add_argument('--train_emb', action='store_true', help='Train word embedding for SQLNet')
     parser.add_argument('--restore', action='store_true', help='Whether restore trained model')
-    parser.add_argument('--logdir', type=str, default='', help='Path of save experiment log')
     parser.add_argument('--learning_rate', type=float, default=1e-3, help='the overall learning rate of model')
     parser.add_argument('--use_bert', action='store_true', help='using Bert to replace word embedding')
     parser.add_argument('--bert_path', type=str, default='/content/drive/My Drive/pre_trained/')
+    parser.add_argument('--use_table', action='store_true', help='Whether use table content to predict Condition value')
     args = parser.parse_args()
 
     if args.toy:
@@ -33,12 +33,12 @@ if __name__ == '__main__':
 
     if args.use_bert:
         n_word = 768
-        model = SQLNet(N_word=n_word, gpu=gpu, bert_path=args.bert_path)
+        model = SQLNet(N_word=n_word, gpu=gpu, use_table=args.use_table, bert_path=args.bert_path)
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0)
     else:
         n_word = 300
         word_emb = load_word_emb('data/char_embedding.json')
-        model = SQLNet(N_word=n_word, gpu=gpu, word_emb=word_emb, trainable_emb=args.train_emb)
+        model = SQLNet(N_word=n_word, gpu=gpu, use_table=args.use_table, word_emb=word_emb, trainable_emb=args.train_emb)
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0)
 
     if args.restore:
