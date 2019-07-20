@@ -11,9 +11,8 @@ from sqlnet.model.modules.bert_embedding import BertEmbedding
 
 class SQLNet(nn.Module):
     def __init__(self, N_word, N_h=512, N_depth=1,
-            gpu=False, use_ca=True, word_emb=None, trainable_emb=False, bert_path=None):
+            gpu=False, word_emb=None, trainable_emb=False, bert_path=None):
         super(SQLNet, self).__init__()
-        self.use_ca = use_ca
         self.trainable_emb = trainable_emb
         self.sample_data = False
         self.gpu = gpu
@@ -33,19 +32,19 @@ class SQLNet(nn.Module):
             print('Using Pre-trained BERT as Embedding')
 
         # Predict the number of selected columns
-        self.sel_num = SelNumPredictor(N_word, N_h, N_depth, use_ca=use_ca)
+        self.sel_num = SelNumPredictor(N_word, N_h, N_depth)
 
         # Predict which columns are selected
-        self.sel_pred = SelPredictor(N_word, N_h, N_depth, self.max_tok_num, use_ca=use_ca)
+        self.sel_pred = SelPredictor(N_word, N_h, N_depth, self.max_tok_num)
 
         # Predict aggregation functions of corresponding selected columns
-        self.agg_pred = AggPredictor(N_word, N_h, N_depth, use_ca=use_ca)
+        self.agg_pred = AggPredictor(N_word, N_h, N_depth)
 
         # Predict number of conditions, condition columns, condition operations and condition values
-        self.cond_pred = SQLNetCondPredictor(N_word, N_h, N_depth, self.max_col_num, self.max_tok_num, use_ca, gpu, self.embed_layer)
+        self.cond_pred = SQLNetCondPredictor(N_word, N_h, N_depth, self.max_col_num, self.max_tok_num, gpu, self.embed_layer)
 
         # Predict condition relationship, like 'and', 'or'
-        self.where_rela_pred = WhereRelationPredictor(N_word, N_h, N_depth, use_ca=use_ca)
+        self.where_rela_pred = WhereRelationPredictor(N_word, N_h, N_depth)
 
         self.CE = nn.CrossEntropyLoss()
         self.softmax = nn.Softmax(dim=-1)
@@ -369,8 +368,7 @@ class SQLNet(nn.Module):
         where_rela_score = where_rela_score.data.cpu().numpy()
         ret_queries = []
         B = len(agg_score)
-        cond_num_score,cond_col_score,cond_op_score,cond_str_score =\
-            [x.data.cpu().numpy() for x in cond_score]
+        cond_num_score, cond_col_score, cond_op_score, cond_str_score = [x.data.cpu().numpy() for x in cond_score]
         for b in range(B):
             cur_query = {}
             cur_query['sel'] = []

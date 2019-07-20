@@ -3,20 +3,17 @@ import torch.nn as nn
 from sqlnet.model.modules.net_utils import run_lstm, col_name_encode
 
 class AggPredictor(nn.Module):
-    def __init__(self, N_word, N_h, N_depth, use_ca):
+    def __init__(self, N_word, N_h, N_depth):
         super(AggPredictor, self).__init__()
-        self.use_ca = use_ca
 
         self.agg_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth,
                                 batch_first=True, dropout=0, bidirectional=True)
-        if use_ca:
-            print("Using column attention on aggregator predicting")
-            self.agg_col_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth,
-                                            batch_first=True, dropout=0, bidirectional=True)
-            self.agg_att = nn.Linear(N_h, N_h)
-        else:
-            print("Not using column attention on aggregator predicting")
-            self.agg_att = nn.Linear(N_h, 1)
+
+        # column attention
+        self.agg_col_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=N_depth,
+                                        batch_first=True, dropout=0, bidirectional=True)
+        self.agg_att = nn.Linear(N_h, N_h)
+
         self.agg_out = nn.Sequential(nn.Linear(N_h, N_h), nn.Tanh(), nn.Linear(N_h, 6))
         self.softmax = nn.Softmax(dim=-1)
         self.agg_out_K = nn.Linear(N_h, N_h)

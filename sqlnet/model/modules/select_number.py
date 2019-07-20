@@ -4,10 +4,9 @@ from sqlnet.model.modules.net_utils import run_lstm, col_name_encode
 
 
 class SelNumPredictor(nn.Module):
-    def __init__(self, N_word, N_h, N_depth, use_ca):
+    def __init__(self, N_word, N_h, N_depth):
         super(SelNumPredictor, self).__init__()
         self.N_h = N_h
-        self.use_ca = use_ca
         self.N_depth = N_depth
 
         self.sel_num_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2), num_layers=self.N_depth,
@@ -19,9 +18,6 @@ class SelNumPredictor(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
         self.sel_num_col2hid1 = nn.Linear(N_h, N_depth * N_h)
         self.sel_num_col2hid2 = nn.Linear(N_h, N_depth * N_h)
-
-        if self.use_ca:
-            print("Using column attention on select number predicting")
 
     def forward(self, x_emb_var, x_len, col_inp_var, col_name_len, col_len, col_num):
         B = len(x_len)

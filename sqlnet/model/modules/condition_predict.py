@@ -7,13 +7,12 @@ from sqlnet.model.modules.word_embedding import WordEmbedding
 
 
 class SQLNetCondPredictor(nn.Module):
-    def __init__(self, N_word, N_h, N_depth, max_col_num, max_tok_num, use_ca, gpu, embed_layer):
+    def __init__(self, N_word, N_h, N_depth, max_col_num, max_tok_num, gpu, embed_layer):
         super(SQLNetCondPredictor, self).__init__()
         self.N_h = N_h * 2
         self.max_tok_num = max_tok_num
         self.max_col_num = max_col_num
         self.gpu = gpu
-        self.use_ca = use_ca
         self.N_depth = N_depth + 1
         self.emb_layer = embed_layer
 
@@ -33,12 +32,9 @@ class SQLNetCondPredictor(nn.Module):
 
         self.cond_col_lstm = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth,
                                      batch_first=True, dropout=0.3, bidirectional=True)
-        if use_ca:
-            print("Using column attention on where predicting")
-            self.cond_col_att = nn.Linear(self.N_h, self.N_h)
-        else:
-            print("Not using column attention on where predicting")
-            self.cond_col_att = nn.Linear(self.N_h, 1)
+
+        # Using column attention on where predicting
+        self.cond_col_att = nn.Linear(self.N_h, self.N_h)
 
         self.cond_col_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth,
                                          batch_first=True, dropout=0.3, bidirectional=True)
@@ -49,10 +45,9 @@ class SQLNetCondPredictor(nn.Module):
         # predict condition operator
         self.cond_op_lstm = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth,
                                     batch_first=True, dropout=0.3, bidirectional=True)
-        if use_ca:
-            self.cond_op_att = nn.Linear(self.N_h, self.N_h)
-        else:
-            self.cond_op_att = nn.Linear(self.N_h, 1)
+        # Using column attention
+        self.cond_op_att = nn.Linear(self.N_h, self.N_h)
+
         self.cond_op_out_K = nn.Linear(self.N_h, self.N_h)
 
         self.cond_op_name_enc = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth,
@@ -138,23 +133,14 @@ class SQLNetCondPredictor(nn.Module):
         e_cond_col, _ = col_name_encode(col_inp_var, col_name_len, col_len, self.cond_col_name_enc)
         h_col_enc, _ = run_lstm(self.cond_col_lstm, x_emb_var, x_len)
 
-        if self.use_ca:
-            col_att_val = torch.bmm(e_cond_col,
-                    self.cond_col_att(h_col_enc).transpose(1, 2))
-            for idx, num in enumerate(x_len):
-                if num < max_x_len:
-                    col_att_val[idx, :, num:] = -100
-            col_att = self.softmax(col_att_val.view(
-                (-1, max_x_len))).view(B, -1, max_x_len)
-            K_cond_col = (h_col_enc.unsqueeze(1) * col_att.unsqueeze(3)).sum(2)
-        else:
-            col_att_val = self.cond_col_att(h_col_enc).squeeze()
-            for idx, num in enumerate(x_len):
-                if num < max_x_len:
-                    col_att_val[idx, num:] = -100
-            col_att = self.softmax(col_att_val)
-            K_cond_col = (h_col_enc *
-                    col_att_val.unsqueeze(2)).sum(1).unsqueeze(1)
+        col_att_val = torch.bmm(e_cond_col,
+                self.cond_col_att(h_col_enc).transpose(1, 2))
+        for idx, num in enumerate(x_len):
+            if num < max_x_len:
+                col_att_val[idx, :, num:] = -100
+        col_att = self.softmax(col_att_val.view(
+            (-1, max_x_len))).view(B, -1, max_x_len)
+        K_cond_col = (h_col_enc.unsqueeze(1) * col_att.unsqueeze(3)).sum(2)
 
         cond_col_score = self.cond_col_out(self.cond_col_out_K(K_cond_col) +
                 self.cond_col_out_col(e_cond_col)).squeeze()
@@ -189,21 +175,13 @@ class SQLNetCondPredictor(nn.Module):
             col_emb.append(cur_col_emb)
         col_emb = torch.stack(col_emb)
 
-        if self.use_ca:
-            op_att_val = torch.matmul(self.cond_op_att(h_op_enc).unsqueeze(1),
-                                      col_emb.unsqueeze(3)).squeeze()
-            for idx, num in enumerate(x_len):
-                if num < max_x_len:
-                    op_att_val[idx, :, num:] = -100
-            op_att = self.softmax(op_att_val.view(B*4, -1)).view(B, 4, -1)
-            K_cond_op = (h_op_enc.unsqueeze(1) * op_att.unsqueeze(3)).sum(2)
-        else:
-            op_att_val = self.cond_op_att(h_op_enc).squeeze()
-            for idx, num in enumerate(x_len):
-                if num < max_x_len:
-                    op_att_val[idx, num:] = -100
-            op_att = self.softmax(op_att_val)
-            K_cond_op = (h_op_enc * op_att.unsqueeze(2)).sum(1).unsqueeze(1)
+        op_att_val = torch.matmul(self.cond_op_att(h_op_enc).unsqueeze(1),
+                                  col_emb.unsqueeze(3)).squeeze()
+        for idx, num in enumerate(x_len):
+            if num < max_x_len:
+                op_att_val[idx, :, num:] = -100
+        op_att = self.softmax(op_att_val.view(B*4, -1)).view(B, 4, -1)
+        K_cond_op = (h_op_enc.unsqueeze(1) * op_att.unsqueeze(3)).sum(2)
 
         cond_op_score = self.cond_op_out(self.cond_op_out_K(K_cond_op) +
                 self.cond_op_out_col(col_emb)).squeeze()
@@ -222,7 +200,8 @@ class SQLNetCondPredictor(nn.Module):
         column_content = []
         for b in range(B):
             column_content.append([table_content[b][x] for x in chosen_col_gt[b]])
-        content_emb = self.emb_layer.gen_table_batch(column_content)
+        content_emb, table_config = self.emb_layer.gen_table_batch(column_content)
+        # print(content_emb.shape)
 
         if gt_where is not None:
             gt_tok_seq, gt_tok_len = self.gen_gt_batch(gt_where)
@@ -241,8 +220,10 @@ class SQLNetCondPredictor(nn.Module):
                     self.cond_str_out_col(col_ext)).squeeze()
             for b, num in enumerate(x_len):
                 if num < max_x_len:
+                    # [B, IDX, T, TOK_NUM]
                     cond_str_score[b, :, :, num:] = -100
             # print('cond_str_score1:', cond_str_score.shape)
+            # quit()
         else:
             h_ext = h_str_enc.unsqueeze(1).unsqueeze(1)
             col_ext = col_emb.unsqueeze(2).unsqueeze(2)
@@ -286,8 +267,8 @@ class SQLNetCondPredictor(nn.Module):
             cond_str_score = torch.stack(scores, 2)
             for b, num in enumerate(x_len):
                 if num < max_x_len:
-                    cond_str_score[b, :, :, num:] = -100  #[B, IDX, T, TOK_NUM]
-            # print('cond_str_score2:', cond_str_score.shape)
+                    cond_str_score[b, :, :, num:] = -100
+
         cond_score = (cond_num_score,
                 cond_col_score, cond_op_score, cond_str_score)
 
