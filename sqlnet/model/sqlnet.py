@@ -29,24 +29,23 @@ class SQLNet(nn.Module):
         if N_word == 300:
             self.embed_layer = WordEmbedding(word_emb, N_word, gpu, self.SQL_TOK, our_model=True, trainable=trainable_emb)
         else:
-            self.embed_layer = BertEmbedding(N_word, gpu, self.SQL_TOK, our_model=True, bert_path=bert_path)
+            self.embed_layer = BertEmbedding(N_word, gpu, our_model=True, bert_path=bert_path)
             print('Using Pre-trained BERT as Embedding')
 
         # Predict the number of selected columns
         self.sel_num = SelNumPredictor(N_word, N_h, N_depth, use_ca=use_ca)
 
-        #Predict which columns are selected
+        # Predict which columns are selected
         self.sel_pred = SelPredictor(N_word, N_h, N_depth, self.max_tok_num, use_ca=use_ca)
 
-        #Predict aggregation functions of corresponding selected columns
+        # Predict aggregation functions of corresponding selected columns
         self.agg_pred = AggPredictor(N_word, N_h, N_depth, use_ca=use_ca)
 
-        #Predict number of conditions, condition columns, condition operations and condition values
+        # Predict number of conditions, condition columns, condition operations and condition values
         self.cond_pred = SQLNetCondPredictor(N_word, N_h, N_depth, self.max_col_num, self.max_tok_num, use_ca, gpu, self.embed_layer)
 
         # Predict condition relationship, like 'and', 'or'
         self.where_rela_pred = WhereRelationPredictor(N_word, N_h, N_depth, use_ca=use_ca)
-
 
         self.CE = nn.CrossEntropyLoss()
         self.softmax = nn.Softmax(dim=-1)
