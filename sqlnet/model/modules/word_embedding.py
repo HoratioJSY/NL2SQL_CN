@@ -2,14 +2,14 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+
 class WordEmbedding(nn.Module):
-    def __init__(self, word_emb, N_word, gpu, SQL_TOK, our_model, trainable=False):
+    def __init__(self, word_emb, N_word, gpu, our_model, trainable=False):
         super(WordEmbedding, self).__init__()
         self.trainable = trainable
         self.N_word = N_word
         self.our_model = our_model
         self.gpu = gpu
-        self.SQL_TOK = SQL_TOK
 
         if trainable:
             print("Using trainable embedding")
