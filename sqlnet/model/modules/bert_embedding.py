@@ -4,6 +4,7 @@ import torch.nn as nn
 import numpy as np
 from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM
 
+
 class BertEmbedding(nn.Module):
     def __init__(self, N_word, gpu, our_model, bert_path):
         super(BertEmbedding, self).__init__()
@@ -74,7 +75,8 @@ class BertEmbedding(nn.Module):
         return hidden_state, val_len
 
     def gen_col_batch(self, cols):
-        # 一个Query有一张表，一张表有多个特征列名，每个特征列名又能Tokenizer
+        # cols = [[[tok_1, tok_2], column_2, ...], table_2, ...]
+        # col_len is the column num for different table
         col_len = np.zeros(len(cols), dtype=np.int64)
 
         names = []

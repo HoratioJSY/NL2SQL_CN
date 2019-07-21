@@ -2,12 +2,10 @@ import torch
 import torch.nn as nn
 import numpy as np
 from sqlnet.model.modules.net_utils import run_lstm, col_name_encode
-from sqlnet.model.modules.bert_embedding import BertEmbedding
-from sqlnet.model.modules.word_embedding import WordEmbedding
 
 
 class SQLNetCondPredictor(nn.Module):
-    def __init__(self, N_word, N_h, N_depth, max_col_num, max_tok_num, gpu, embed_layer):
+    def __init__(self, N_word, N_h, N_depth, max_col_num, max_tok_num, gpu, embed_layer, use_table):
         super(SQLNetCondPredictor, self).__init__()
         self.N_h = N_h * 2
         self.max_tok_num = max_tok_num
@@ -15,6 +13,7 @@ class SQLNetCondPredictor(nn.Module):
         self.gpu = gpu
         self.N_depth = N_depth + 1
         self.emb_layer = embed_layer
+        self.use_table = use_table
 
         # predict condition number
         self.cond_num_lstm = nn.LSTM(input_size=N_word, hidden_size=int(self.N_h/2), num_layers=self.N_depth,
@@ -73,29 +72,40 @@ class SQLNetCondPredictor(nn.Module):
 
     def gen_gt_batch(self, split_tok_seq):
         B = len(split_tok_seq)
+
+        # The max table content seq len in the batch
         max_len = max([max([len(tok) for tok in tok_seq]+[0]) for
-            tok_seq in split_tok_seq]) - 1 # The max seq len in the batch.
+            tok_seq in split_tok_seq]) - 1
         if max_len < 1:
             max_len = 1
+
+        # 4 is max num of condition clause
         ret_array = np.zeros((
             B, 4, max_len, self.max_tok_num), dtype=np.float32)
         ret_len = np.zeros((B, 4))
+
         for b, tok_seq in enumerate(split_tok_seq):
             idx = 0
+
+            # tok_seq is a list of [index] in one query
             for idx, one_tok_seq in enumerate(tok_seq):
                 out_one_tok_seq = one_tok_seq[:-1]
+                # record condition's value length, for different table and column
                 ret_len[b, idx] = len(out_one_tok_seq)
                 for t, tok_id in enumerate(out_one_tok_seq):
                     ret_array[b, idx, t, tok_id] = 1
+
+            # pad for condition num
             if idx < 3:
                 ret_array[b, idx+1:, 0, 1] = 1
                 ret_len[b, idx+1:] = 1
 
+        # [batch_size, condition num, max value length, max_tok_num=200]
         ret_inp_var = torch.from_numpy(ret_array)
         if self.gpu:
-            ret_inp_var = ret_inp_var.cuda()
+            ret_inp_var = ret_inp_var.to('cuda')
 
-        return ret_inp_var, ret_len #[B, IDX, max_len, max_tok_num]
+        return ret_inp_var, ret_len
 
     def forward(self, x_emb_var, x_len, col_inp_var, col_name_len,
             col_len, table_content, gt_where, gt_cond):
@@ -197,13 +207,15 @@ class SQLNetCondPredictor(nn.Module):
             col_emb.append(cur_col_emb)
         col_emb = torch.stack(col_emb)
 
-        column_content = []
-        for b in range(B):
-            column_content.append([table_content[b][x] for x in chosen_col_gt[b]])
-        content_emb, table_config = self.emb_layer.gen_table_batch(column_content)
-        # print(content_emb.shape)
+        if self.use_table:
+            column_content = []
+            for b in range(B):
+                column_content.append([table_content[b][x] for x in chosen_col_gt[b]])
+            content_emb, table_config = self.emb_layer.gen_table_batch(column_content)
+            # print(content_emb.shape)
 
         if gt_where is not None:
+            # gt_where = [[[index range for value in query], column 2, ...],table 2, ...]
             gt_tok_seq, gt_tok_len = self.gen_gt_batch(gt_where)
             g_str_s_flat, _ = self.cond_str_decoder(
                     gt_tok_seq.view(B*4, -1, self.max_tok_num))

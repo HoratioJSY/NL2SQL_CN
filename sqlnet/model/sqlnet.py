@@ -9,24 +9,25 @@ from sqlnet.model.modules.select_number import SelNumPredictor
 from sqlnet.model.modules.where_relation import WhereRelationPredictor
 from sqlnet.model.modules.bert_embedding import BertEmbedding
 
+
 class SQLNet(nn.Module):
-    def __init__(self, N_word, N_h=512, N_depth=1,
-            gpu=False, word_emb=None, trainable_emb=False, bert_path=None):
+    def __init__(self, N_word, N_h=512, N_depth=1, gpu=False, use_table=False,
+                 word_emb=None, trainable_emb=False, bert_path=None):
         super(SQLNet, self).__init__()
         self.trainable_emb = trainable_emb
         self.sample_data = False
         self.gpu = gpu
         self.N_h = N_h
         self.N_depth = N_depth
+        self.use_table = use_table
 
         self.max_col_num = 50
         self.max_tok_num = 200
-        self.SQL_TOK = ['<UNK>', '<END>', 'WHERE', 'AND', 'OR', '==', '>', '<', '!=', '<BEG>']
         self.COND_OPS = ['>', '<', '==', '!=']
 
         # Word embedding
         if N_word == 300:
-            self.embed_layer = WordEmbedding(word_emb, N_word, gpu, self.SQL_TOK, our_model=True, trainable=trainable_emb)
+            self.embed_layer = WordEmbedding(word_emb, N_word, gpu, our_model=True, trainable=trainable_emb)
         else:
             self.embed_layer = BertEmbedding(N_word, gpu, our_model=True, bert_path=bert_path)
             print('Using Pre-trained BERT as Embedding')
@@ -41,7 +42,8 @@ class SQLNet(nn.Module):
         self.agg_pred = AggPredictor(N_word, N_h, N_depth)
 
         # Predict number of conditions, condition columns, condition operations and condition values
-        self.cond_pred = SQLNetCondPredictor(N_word, N_h, N_depth, self.max_col_num, self.max_tok_num, gpu, self.embed_layer)
+        self.cond_pred = SQLNetCondPredictor(N_word, N_h, N_depth, self.max_col_num, self.max_tok_num,
+                                             gpu, self.embed_layer, use_table)
 
         # Predict condition relationship, like 'and', 'or'
         self.where_rela_pred = WhereRelationPredictor(N_word, N_h, N_depth)
@@ -54,25 +56,36 @@ class SQLNet(nn.Module):
             self.to('cuda')
 
     def generate_gt_where_seq_test(self, q, gt_cond_seq):
+        """
+        :param q: a list of all queries, every query is a list of token
+        :param gt_cond_seq: a list of all Where conditions
+        :return: a list that recorded the index of queries
+        """
         ret_seq = []
-        for cur_q, ans in zip(q, gt_cond_seq):
-            temp_q = u"".join(cur_q)
-            cur_q = [u'<BEG>'] + cur_q + [u'<END>']
+        for one_q, conditions in zip(q, gt_cond_seq):
+            temp_q = u"".join(one_q)
+            one_q = [u'<BEG>'] + one_q + [u'<END>']
             record = []
             record_cond = []
-            for cond in ans:
+
+            for cond in conditions:
+                # whether value is appear in query
                 if cond[2] not in temp_q:
                     record.append((False, cond[2]))
                 else:
                     record.append((True, cond[2]))
+
+            # recording the index of value in query
             for idx, item in enumerate(record):
                 temp_ret_seq = []
+                # if value appeared in query, record the index range
                 if item[0]:
                     temp_ret_seq.append(0)
-                    temp_ret_seq.extend(list(range(temp_q.index(item[1])+1,temp_q.index(item[1])+len(item[1])+1)))
-                    temp_ret_seq.append(len(cur_q)-1)
+                    temp_ret_seq.extend(list(range(temp_q.index(item[1])+1,
+                                                   temp_q.index(item[1])+len(item[1])+1)))
+                    temp_ret_seq.append(len(one_q)-1)
                 else:
-                    temp_ret_seq.append([0,len(cur_q)-1])
+                    temp_ret_seq.append([0, len(one_q)-1])
                 record_cond.append(temp_ret_seq)
             ret_seq.append(record_cond)
         return ret_seq
@@ -98,7 +111,7 @@ class SQLNet(nn.Module):
             print(col_num)
             self.sample_data = False
 
-        # x_len is a list of all query length, col_len is a list of all column length
+        # x_len is a list of all query length, col_len is a list of all column num
         x_emb_var, x_len = self.embed_layer.gen_x_batch(q)
         col_inp_var, col_name_len, col_len = self.embed_layer.gen_col_batch(col)
 
@@ -215,8 +228,7 @@ class SQLNet(nn.Module):
                 print(cond_op_truth_var)
                 exit(0)
 
-        #Evaluate the strings of conditions
-        # 选择column后，确定具体的行特征名
+        # Evaluate the values of conditions
         for b in range(len(gt_where)):
             for idx in range(len(gt_where[b])):
                 cond_str_truth = gt_where[b][idx]
