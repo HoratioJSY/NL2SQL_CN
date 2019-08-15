@@ -54,6 +54,7 @@ The sample Table which paired with sample question can be demonstrated as:
 The final prediction for SQL Model is that:
 
 ```sql
-
+SELECT SUM(col_3) FROM Table_4d29d0513aaa11e9b911f40f24344a08 WHERE (col_1 == '大黄蜂' and col_1 == '密室逃生')
 ```
 
+More details about model and data can be found: (Blog)[http://jiangsiyuan.com/]
