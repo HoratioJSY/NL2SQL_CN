@@ -2,7 +2,7 @@ import torch
 import collections
 import torch.nn as nn
 import numpy as np
-from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM
+from pytorch_transformers import BertTokenizer, BertModel
 
 
 class BertEmbedding(nn.Module):
@@ -13,8 +13,9 @@ class BertEmbedding(nn.Module):
         self.gpu = gpu
 
         self.tokenizer = BertTokenizer.from_pretrained(bert_path)
-        self.bert_model = BertModel.from_pretrained(bert_path)
         self.Token2ID = self.load_vocab(bert_path + 'vocab.txt')
+        self.bert_model = BertModel.from_pretrained(bert_path)
+
         self.bert_model.eval()
         if self.gpu:
             self.bert_model.to('cuda')
@@ -171,11 +172,6 @@ class BertEmbedding(nn.Module):
                 value_index = [0]
                 for _ in range(value_num):
                     value_index.append(tokenizered_chr[i*len(table)+j].index('[SEP]', value_index[-1]+1))
-                # print(tokenizered_chr[i + j])
-                # print(value_index)
-                # print([tokenizered_chr[i+j][x] for x in value_index])
-                # print(table_content[0][0])
-                # quit()
 
                 # caculate average
                 for k in range(value_num):
