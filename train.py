@@ -56,7 +56,7 @@ if __name__ == '__main__':
     for i in range(args.epoch):
         print('Epoch %d'%(i+1))
         # train on the train dataset
-        train_loss = epoch_train(model, optimizer, batch_size, train_sql, train_table)
+        train_loss = epoch_train(model, optimizer, batch_size, train_sql, train_table, args.use_table)
         # evaluate on the validation dataset
         val_acc = epoch_acc(model, batch_size, dev_sql, dev_table, dev_db)
         # accuracy of each sub-task
