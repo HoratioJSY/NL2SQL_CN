@@ -136,13 +136,14 @@ class SQLNet(nn.Module):
                                                         col_inp_var, col_name_len, col_len, col_num)
 
         cond_score = self.cond_pred.forward(x_emb_var, x_len, col_inp_var,
-                                            col_name_len, col_len, table_content, gt_where, gt_cond)
+                                            col_name_len, col_len, table_content, q, gt_where, gt_cond)
 
         return sel_num_score, sel_score, agg_score, cond_score, where_rela_score
 
     def loss(self, score, truth_num, gt_where):
         sel_num_score, sel_score, agg_score, cond_score, where_rela_score = score
 
+        # truth_num is ans_seq in utils.to_batch_seq()
         B = len(truth_num)
         loss = 0
 
@@ -183,9 +184,10 @@ class SQLNet(nn.Module):
         cond_num_score, cond_col_score, cond_op_score, cond_str_score = cond_score
 
         # Evaluate the number of conditions
-        # cond_num_truth = map(lambda x:x[3], truth_num)
+        # the fourth element of ans_seq are labeled condition nums
         cond_num_truth = [x[3] for x in truth_num]
         cond_num_truth_var = torch.from_numpy(np.array(cond_num_truth))
+
         if self.gpu:
             try:
                 cond_num_truth_var = cond_num_truth_var.to('cuda')
@@ -193,10 +195,10 @@ class SQLNet(nn.Module):
                 print("cond_num_truth_var error")
                 print(cond_num_truth_var)
                 exit(0)
+
         loss += self.CE(cond_num_score, cond_num_truth_var)
 
         # Evaluate the columns of conditions
-        # condition 选择的列
         T = len(cond_col_score[0])
         truth_prob = np.zeros((B, T), dtype=np.float32)
         for b in range(B):
@@ -214,14 +216,17 @@ class SQLNet(nn.Module):
         loss += bce_loss
 
         # Evaluate the operator of conditions
-        for b in range(len(truth_num)):
+        for b in range(B):
             if len(truth_num[b][5]) == 0:
                 continue
             cond_op_truth_var = torch.from_numpy(np.array(truth_num[b][5]))
             if self.gpu:
                 cond_op_truth_var = cond_op_truth_var.to('cuda')
             cond_op_pred = cond_op_score[b, :len(truth_num[b][5])]
+
+            assert cond_op_truth_var.shape[-1] == cond_op_pred.shape[0]
             try:
+                # first input of CE is a vector of score, second is a scalar of class
                 loss += (self.CE(cond_op_pred, cond_op_truth_var) / len(truth_num))
             except:
                 print(cond_op_pred)
@@ -229,19 +234,32 @@ class SQLNet(nn.Module):
                 exit(0)
 
         # Evaluate the values of conditions
-        for b in range(len(gt_where)):
-            for idx in range(len(gt_where[b])):
-                cond_str_truth = gt_where[b][idx]
-                if len(cond_str_truth) == 1:
-                    continue
-                cond_str_truth_var = torch.from_numpy(np.array(cond_str_truth[1:]))
-                if self.gpu:
-                    cond_str_truth_var = cond_str_truth_var.to('cuda')
-                str_end = len(cond_str_truth) - 1
-                cond_str_pred = cond_str_score[b, idx, :str_end]
-                # print(cond_str_pred.shape)
-                # print(cond_str_truth_var.shape)
-                loss += (self.CE(cond_str_pred, cond_str_truth_var) / (len(gt_where) * len(gt_where[b]))) * 5
+        if self.use_table:
+            gt_index, gt_value, condition_num, max_value_length = gt_where
+            gt_label = torch.from_numpy(gt_index[:, -1])
+            assert gt_label.shape[-1] == np.array(condition_num).sum()
+
+            assert len(gt_label) == len(cond_str_score)
+            if self.gpu:
+                gt_label = gt_label.to('cuda')
+                cond_str_score = cond_str_score.to('cuda')
+
+            loss += (self.CE(cond_str_score, gt_label)) / len(gt_index) * 5
+
+        else:
+            for b in range(len(gt_where)):
+                for idx in range(len(gt_where[b])):
+                    cond_str_truth = gt_where[b][idx]
+                    if len(cond_str_truth) == 1:
+                        continue
+                    cond_str_truth_var = torch.from_numpy(np.array(cond_str_truth[1:]))
+                    if self.gpu:
+                        cond_str_truth_var = cond_str_truth_var.to('cuda')
+                    str_end = len(cond_str_truth) - 1
+                    cond_str_pred = cond_str_score[b, idx, :str_end]
+                    # print(cond_str_pred.shape)
+                    # print(cond_str_truth_var.shape)
+                    loss += (self.CE(cond_str_pred, cond_str_truth_var) / (len(gt_where) * len(gt_where[b]))) * 5
 
         # Evaluate condition relationship, and / or
         # where_rela_truth = map(lambda x:x[6], truth_num)
@@ -328,18 +346,16 @@ class SQLNet(nn.Module):
 
         return np.array((sel_num_err, sel_err, agg_err, cond_num_err, cond_col_err, cond_op_err, cond_val_err , cond_rela_err)), tot_err
 
-
-    def gen_query(self, score, q, col, raw_q, reinforce=False, verbose=False):
+    def gen_query(self, score, q, col, raw_q):
         """
-        :param score:
+        :param score: all score for prediction, cond_score include condition utils
         :param q: token-questions
         :param col: token-headers
         :param raw_q: original question sequence
         :return:
         """
         def merge_tokens(tok_list, raw_tok_str):
-            tok_str = raw_tok_str# .lower()
-            alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789$('
+            tok_str = raw_tok_str
             special = {'-LRB-':'(',
                     '-RRB-':')',
                     '-LSB-':'[',
@@ -373,6 +389,7 @@ class SQLNet(nn.Module):
             return ret.strip()
 
         sel_num_score, sel_score, agg_score, cond_score, where_rela_score = score
+
         # [64,4,6], [64,14], ..., [64,4]
         sel_num_score = sel_num_score.data.cpu().numpy()
         sel_score = sel_score.data.cpu().numpy()
@@ -380,7 +397,14 @@ class SQLNet(nn.Module):
         where_rela_score = where_rela_score.data.cpu().numpy()
         ret_queries = []
         B = len(agg_score)
-        cond_num_score, cond_col_score, cond_op_score, cond_str_score = [x.data.cpu().numpy() for x in cond_score]
+
+        cond_num_score, cond_col_score, cond_op_score = [x.data.cpu().numpy() for x in cond_score[0:-1]]
+        cond_str_score = cond_score[-1]
+        assert len(cond_str_score) == 3
+        value_score, cond_value, cond_num_list = cond_str_score
+
+        badcase = 0
+        cond_num_mark = 0
         for b in range(B):
             cur_query = {}
             cur_query['sel'] = []
@@ -396,18 +420,37 @@ class SQLNet(nn.Module):
             cond_num = np.argmax(cond_num_score[b])
             all_toks = ['<BEG>'] + q[b] + ['<END>']
             max_idxes = np.argsort(-cond_col_score[b])[:cond_num]
+
+            # generative cond_num triples for "conds"
             for idx in range(cond_num):
                 cur_cond = []
-                cur_cond.append(max_idxes[idx]) # where-col
-                cur_cond.append(np.argmax(cond_op_score[b][idx])) # where-op
-                cur_cond_str_toks = []
-                for str_score in cond_str_score[b][idx]:
-                    str_tok = np.argmax(str_score[:len(all_toks)])
-                    str_val = all_toks[str_tok]
-                    if str_val == '<END>':
-                        break
-                    cur_cond_str_toks.append(str_val)
-                cur_cond.append(merge_tokens(cur_cond_str_toks, raw_q[b]))
-                cur_query['conds'].append(cur_cond)
+                # where-col
+                cur_cond.append(max_idxes[idx])
+                # where-op
+                cur_cond.append(np.argmax(cond_op_score[b][idx]))
+
+                if self.use_table:
+                    try:
+                        one_cond_index = torch.argmax(value_score[cond_num_mark])
+                        one_cond_value = cond_value[cond_num_mark][one_cond_index]
+                        cur_cond.append(one_cond_value)
+                        cur_query['conds'].append(cur_cond)
+                        cond_num_mark += 1
+                    except BaseException:
+                        cur_cond.append('UNK')
+                        cur_query['conds'].append(cur_cond)
+                        cond_num_mark += 1
+                        badcase += 1
+                        print('badcase for generating condition value:', badcase)
+                else:
+                    cur_cond_str_toks = []
+                    for str_score in cond_str_score[b][idx]:
+                        str_tok = np.argmax(str_score[:len(all_toks)])
+                        str_val = all_toks[str_tok]
+                        if str_val == '<END>':
+                            break
+                        cur_cond_str_toks.append(str_val)
+                    cur_cond.append(merge_tokens(cur_cond_str_toks, raw_q[b]))
+                    cur_query['conds'].append(cur_cond)
             ret_queries.append(cur_query)
         return ret_queries
