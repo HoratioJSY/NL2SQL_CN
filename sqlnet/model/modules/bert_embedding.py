@@ -183,6 +183,7 @@ class BertEmbedding(nn.Module):
         # value_list=[[value list for condition one],...]
         tokenizered_chr = []
 
+        # tokenizered_chr=[['[CLS]', 'tok_1', 'tok_2', '[SEP]', 'tok_3', ...,'[SEP]'],...]
         for one_condition_value in value_list:
             contain_token = ['[CLS]']
             for value in one_condition_value:
@@ -197,15 +198,21 @@ class BertEmbedding(nn.Module):
         max_token_len = max([len(x) for x in tokenizered_chr])
         tokens_id_tensor = torch.zeros([len(tokenizered_chr), max_token_len], dtype=torch.int64)
         attention_mask = torch.zeros([len(tokenizered_chr), max_token_len], dtype=torch.long)
+
         for i, cond_column in enumerate(tokenizered_chr):
             tokens_id_tensor[i, :len(cond_column)] = torch.tensor([self.tokenizer.convert_tokens_to_ids(cond_column)])
             attention_mask[i, :len(cond_column)] = torch.ones([1, len(cond_column)], dtype=torch.long)
 
-        if self.gpu:
-            tokens_id_tensor = tokens_id_tensor.to('cuda')
-            attention_mask = attention_mask.to('cuda')
-        with torch.no_grad():
-            hidden_state, _ = self.bert_model(tokens_id_tensor, attention_mask=attention_mask)
+        try:
+            if self.gpu:
+                tokens_id_tensor = tokens_id_tensor.to('cuda')
+                attention_mask = attention_mask.to('cuda')
+            with torch.no_grad():
+                hidden_state, _ = self.bert_model(tokens_id_tensor, attention_mask=attention_mask)
+        except BaseException:
+            with torch.no_grad():
+                hidden_state, _ = self.bert_model(tokens_id_tensor, attention_mask=attention_mask)
+
         assert hidden_state.size() == (len(tokenizered_chr), max_token_len, self.N_word)
 
         # average every token's embedding as value representation
