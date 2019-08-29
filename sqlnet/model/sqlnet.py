@@ -56,7 +56,7 @@ class SQLNet(nn.Module):
         if gpu:
             self.to('cuda')
         if self.use_table:
-            print("use table content for condition value prediction")
+            print("using table content for condition value prediction")
 
     def generate_gt_where_seq_test(self, q, gt_cond_seq):
         """
