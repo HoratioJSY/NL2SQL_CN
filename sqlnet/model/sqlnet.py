@@ -52,8 +52,11 @@ class SQLNet(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
         self.log_softmax = nn.LogSoftmax()
         self.bce_logit = nn.BCEWithLogitsLoss()
+
         if gpu:
             self.to('cuda')
+        if self.use_table:
+            print("use table content for condition value prediction")
 
     def generate_gt_where_seq_test(self, q, gt_cond_seq):
         """
@@ -398,10 +401,13 @@ class SQLNet(nn.Module):
         ret_queries = []
         B = len(agg_score)
 
-        cond_num_score, cond_col_score, cond_op_score = [x.data.cpu().numpy() for x in cond_score[0:-1]]
-        cond_str_score = cond_score[-1]
-        assert len(cond_str_score) == 3
-        value_score, cond_value, cond_num_list = cond_str_score
+        if self.use_table:
+            cond_num_score, cond_col_score, cond_op_score = [x.data.cpu().numpy() for x in cond_score[0:-1]]
+            cond_str_score = cond_score[-1]
+            assert len(cond_str_score) == 3
+            value_score, cond_value, cond_num_list = cond_str_score
+        else:
+            cond_num_score, cond_col_score, cond_op_score, cond_str_score = [x.data.cpu().numpy() for x in cond_score]
 
         badcase = 0
         cond_num_mark = 0

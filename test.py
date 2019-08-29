@@ -12,6 +12,7 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type=float, default=1e-3, help='the overall learning rate of model')
     parser.add_argument('--use_bert', action='store_true', help='using Bert to replace word embedding')
     parser.add_argument('--bert_path', type=str, default='/content/drive/My Drive/pre_trained/')
+    parser.add_argument('--use_table', action='store_true', help='Whether use table content to predict Condition value')
     args = parser.parse_args()
 
     if args.toy:
